@@ -19,12 +19,23 @@ class GUI(object):
 
         #code to run at start
         pygame.init()
+
+        #name game window
         pygame.display.set_caption("RLRisk - Reinforcement Learning Environment")
+
+        #load image and make background
         self.background = pygame.image.load(debug_path+"board.bmp")
         self.size = self.background.get_size()
-        self.screen = pygame.display.set_mode(size)
+        self.screen = pygame.display.set_mode(self.size)
         self.backgroundRect = self.background.get_rect()
         self.screen.blit(self.background, self.backgroundRect)
+
+        #get fonts working
+        pygame.font.init()
+        self.d_font = pygame.font.get_default_font()
+        self.font = pygame.font.Font(self.d_font, 12)
+
+        #paint white circles on territories
         [pygame.draw.circle(self.screen,self.colors["white"],(x,y),14, 0) for x,y in self.positions.values()]
         pygame.display.flip()
 
@@ -50,14 +61,35 @@ class GUI(object):
                 self.quit_game()
                 return True
 
-    def recolor(self, player, terr, value):
+    def recolor(self, state):
         '''
-        colors a circle representing a territory a
-        specific player color and also updates troop count
+        colors a circle representing a territory from a environment state
         '''
 
-        pygame.draw.circle(self.screen, self.p2c[player], self.positions[terr])
-        
+        #reload original background
+        self.screen.blit(self.background, self.backgroundRect)
+
+        #get the territories dictionary
+        territories = state[2]
+
+        #now color and text cirlces
+        for key in territories:
+            #get owner and troop values
+            t_owner,troops = territories[key]
+
+            #color all the circles their respective colors
+            pygame.draw.circle(self.screen, self.colors[self.p2c[t_owner]],
+                               self.positions[key], 14, 0)
+
+            #now add the troop count font
+            label = self.font.render(str(troops),1,self.colors['black'])
+            
+            x,y = self.positions[key]
+            self.screen.blit(label,(x-12,y-6))
+
+        pygame.display.flip()
+
+            
 
     def quit_game(self):
         '''closes the pygame window'''

@@ -36,9 +36,9 @@ def node_test():
 
     return True
 
-def gui_test():
+def event_test():
     '''
-    test the responsiveness, functionality, and display of the gui
+    test the gui response to events
     '''
     graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
 
@@ -58,7 +58,19 @@ def gui_test():
     else:
         print("Exit or Event Log cleanup was a failure!")
 
+def gui_test():
+    '''testing gui painting territories by player and troop count'''
+
+    players = [BaseAgent(x) for x in range(6)]
+
+    env = risk.standard_game(players)
+
+    graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
+
+    graphics.recolor(env.state)
     
+    input("Click EXIT, the press enter")
+    event = graphics.loop_event(pygame.KEYDOWN)
 
 def parse_test():
     '''
@@ -195,7 +207,8 @@ menu = {
     "5) territory assignment test":assign_territories_test,
     "6) standard game test":standard_game_test,
     "7) play standard game":play_game,
-    "8) GUI test":gui_test}
+    "8) event test":event_test,
+    "9) gui test":gui_test}
 
 stop = False
 while not stop:
