@@ -42,12 +42,24 @@ class Risk:
                 self.turn_count+=1
                 turn = self.turn_order[self.turn_count%players]
 
+            #perform recruitment
             self.recruitment_phase(turn)
+
+            #perform attack
             self.attack_phase(turn)
-            if not self.winner(debug): #if attacking won you the game stop
+
+            #if attacking won you the game stop
+            if not self.winner(debug):
+                #if game is not over perform reinforcement
                 self.reinforce_phase(turn)
 
+            #turn is over, increase turn count
             self.turn_count+=1
+
+        #exit message
+        System.out.println("The game is over! Player",
+                           self.turn_order[(self.turn_count-1)%players],
+                           "won the game!")
                 
         
 
@@ -397,7 +409,9 @@ class Risk:
     def attack_phase(self, player):
         '''perform attack phase'''
 
-        pass
+        current_player = self.players[player]
+
+        
 
     def reinforce_phase(self, player):
         '''perform reinforcement phase (Turn phase not RL)'''

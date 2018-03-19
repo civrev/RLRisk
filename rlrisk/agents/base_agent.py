@@ -15,25 +15,6 @@ class BaseAgent(object):
 
         self.player=player
 
-    def pick_initial_territories(self, valid, state):
-        '''
-        for choosing territories at beginning of game
-        when not randomly dealt
-        arguments are passed from environment, a list of valid choices
-        returns a single territory ID
-        override this method for subclasses
-        '''
-
-        steal_cards, turn_order, territories, cards, trade_ins = state
-
-        chosen = random.choice(valid)
-
-        territories[chosen]=[self.player,1]
-
-        state = (steal_cards, turn_order, territories, cards, trade_ins)
-
-        return (chosen, state)
-
     def place_troops(self, state, troops):
         '''
         Place troops into owned territory
@@ -58,15 +39,41 @@ class BaseAgent(object):
 
         return (steal_cards, turn_order, territories, cards, trade_ins)
 
-    def choose_placement(self, valid, state, troops):
-        '''
-        returns a single territory ID from a list of valid ids
-        Override this method for subclass decisions on troop placement
-        '''
-        
-        chosen = random.choice(valid)
+    def get_owned_territories(self, state):
+        '''returns a list of territories owned by the player'''
 
-        return chosen
+        steal_cards, turn_order, territories, cards, trade_ins = state
+
+        return [t for t in territories if territories[t][0]==self.player]
+
+    def get_targets(self, state, board):
+        '''
+        returns a list of tuples with the first value being
+        a valid territory to attack from and the second a
+        potential target
+
+        NOTE: the board is also a required argument, as it needs
+        to know the connections to calculate valid attacks
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = state
+
+        #get all owned territories
+        owned = self.get_owned_territories(state)
+
+        #get all owned territories with more than 1 troop
+        valid = [t for t in owned if territories[t][1]>1]
+
+        #generate a list of tuples representing all valid attack options
+        attacks = []
+
+        for t in valid:
+            for link in board[t]:
+                if link not in owned:
+                    attacks.append((t,link))
+
+        return attacks
+        
 
     def recruit_troops(self, state, continents):
         '''
@@ -79,7 +86,7 @@ class BaseAgent(object):
         recruit = 0
 
         #get the territories this player controls
-        t_owned = [t for t in territories if territories[t][0]==self.player]
+        t_owned = self.get_owned_territories(state)
 
         #count them
         t_count = len(t_owned)
@@ -227,6 +234,10 @@ class BaseAgent(object):
         #if agent decides not to trade in a set, then no troops will be awarded
         return 0
 
+    #-------------------------------------------------------------
+    #---------------------Abstract Methods------------------------
+    #-------------------------------------------------------------
+
     def choose_trade_in(self, state, trade_vals, set_list, must_trade):
         '''
         this is where the agent chooses what trade in combo to make, if any
@@ -234,3 +245,40 @@ class BaseAgent(object):
         '''
 
         return random.choice(set_list)
+
+    def choose_attack(self, attacks):
+        '''
+        asks the agent to choose from a list of valid attacks
+        Override for subclasses
+        '''
+
+        return random.choice(attacks)
+
+    def choose_placement(self, valid, state, troops):
+        '''
+        returns a single territory ID from a list of valid ids
+        Override this method for subclass decisions on troop placement
+        '''
+        
+        chosen = random.choice(valid)
+
+        return chosen
+
+    def choose_initial_territories(self, valid, state):
+        '''
+        for choosing territories at beginning of game
+        when not randomly dealt
+        arguments are passed from environment, a list of valid choices
+        returns a single territory ID
+        override this method for subclasses
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = state
+
+        chosen = random.choice(valid)
+
+        territories[chosen]=[self.player,1]
+
+        state = (steal_cards, turn_order, territories, cards, trade_ins)
+
+        return (chosen, state)

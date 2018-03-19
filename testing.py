@@ -72,6 +72,37 @@ def gui_test():
     input("Click EXIT, the press enter")
     event = graphics.loop_event(pygame.KEYDOWN)
 
+def attack_phase_test():
+    '''test the parts of the attack phase for the base agent'''
+
+    #generate environment
+    players = [BaseAgent(x) for x in range(6)]
+
+    env = risk.standard_game(players)
+
+    #unpack initial state
+    steal_cards, turn_order, territories, cards, trade_ins = env.state
+
+    #change troops to random values
+    for key in territories:
+        territories[key][1]=random.randrange(1,50)
+
+    #repack changed state
+    env.state = (steal_cards, turn_order, territories, cards, trade_ins)
+
+    #get a player
+    p = players[0]
+
+    #compare valid targets for validity
+    print("Owned---------------------------------------")
+    [print(x,territories[x]) for x in p.get_owned_territories(env.state)]
+    print("Board --------------------------------------")
+    [print(t,v) for t,v in env.board.items()]
+    print("Valid Attacks ------------------------------")
+    [print(x) for x in p.get_targets(env.state, env.board)]
+
+    
+
 def parse_test():
     '''
     test the ability to parse state representations
@@ -200,15 +231,16 @@ def play_game():
 
 #****************************************************************
 menu = {
-    "1) node test":node_test,
-    "2) parse test":parse_test,
-    "3) agent test":player_test,
-    "4) game config test":config_test,
-    "5) territory assignment test":assign_territories_test,
-    "6) standard game test":standard_game_test,
-    "7) play standard game":play_game,
-    "8) event test":event_test,
-    "9) gui test":gui_test}
+    "01) node test":node_test,
+    "02) parse test":parse_test,
+    "03) agent test":player_test,
+    "04) game config test":config_test,
+    "05) territory assignment test":assign_territories_test,
+    "06) standard game test":standard_game_test,
+    "07) play standard game":play_game,
+    "08) event test":event_test,
+    "09) gui test":gui_test,
+    "10) attack phase test": attack_phase_test}
 
 stop = False
 while not stop:
