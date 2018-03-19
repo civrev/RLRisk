@@ -6,9 +6,12 @@ see it's sub-classes for actual functionality
 """
 
 import random
+import abc
 
 class BaseAgent(object):
     """A base agent for Risk"""
+
+    __metaclass__  = abc.ABCMeta
 
     def __init__(self, player):
         '''must include what player they are in the constructor'''
@@ -114,6 +117,7 @@ class BaseAgent(object):
                 recruit += continents[continent][0]
 
         return recruit
+
 
     def get_sets(self, state, card_faces, debug=False):
         '''
@@ -238,6 +242,7 @@ class BaseAgent(object):
     #---------------------Abstract Methods------------------------
     #-------------------------------------------------------------
 
+    @abc.abstractmethod
     def choose_trade_in(self, state, trade_vals, set_list, must_trade):
         '''
         this is where the agent chooses what trade in combo to make, if any
@@ -246,6 +251,7 @@ class BaseAgent(object):
 
         return random.choice(set_list)
 
+    @abc.abstractmethod
     def choose_attack(self, attacks):
         '''
         asks the agent to choose from a list of valid attacks
@@ -254,6 +260,7 @@ class BaseAgent(object):
 
         return random.choice(attacks)
 
+    @abc.abstractmethod
     def choose_placement(self, valid, state, troops):
         '''
         returns a single territory ID from a list of valid ids
@@ -264,6 +271,7 @@ class BaseAgent(object):
 
         return chosen
 
+    @abc.abstractmethod
     def choose_initial_territories(self, valid, state):
         '''
         for choosing territories at beginning of game

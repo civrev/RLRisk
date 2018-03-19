@@ -19,7 +19,7 @@ class Human(base_agent.BaseAgent):
         self.gui = gui
         self.gui_promt = 0 #for communicating with the GUI
 
-    def pick_initial_territories(self, valid, state):
+    def choose_initial_territories(self, valid, state):
         '''
         User picks a territory from list
         '''
