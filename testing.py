@@ -3,8 +3,10 @@
 
 import sys #for testing the size of python objects in memory
 import random
+import os
+import pygame
 
-from rlrisk.environment import risk, config
+from rlrisk.environment import risk, config, gui
 from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
 
@@ -23,12 +25,40 @@ def node_test():
             print("ID",i_d,"is not",name2node[node2name[i_d]])
             return False
 
-    gui = risk.GUI()
+    print(os.getcwd()) #debugging image locating
+
+    graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
 
     for num in range(42):
-        print("Name:",node2name[num],"\tID:",num,"Position",gui.positions[num])
+        print("Name:",node2name[num],"\tID:",num,"Position",graphics.positions[num])
+
+    graphics.quit_game()
 
     return True
+
+def gui_test():
+    '''
+    test the responsiveness, functionality, and display of the gui
+    '''
+    graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
+
+    input("Use KEYDOWN then press enter")
+    event = graphics.loop_event(pygame.KEYDOWN)
+    if event!=None and pygame.KEYDOWN == event.type:
+        print("Event search was a success!")
+    else:
+        print("Event search was a failure")
+
+    input("Click EXIT, the press enter")
+
+    event = graphics.loop_event(pygame.KEYDOWN)
+
+    if event:
+        print("Exit was a success! Event Log cleanup was a success!")
+    else:
+        print("Exit or Event Log cleanup was a failure!")
+
+    
 
 def parse_test():
     '''
@@ -157,31 +187,27 @@ def play_game():
 
 
 #****************************************************************
-if input("Run node test? y/n ").lower() == "y":
-    print("Node Test successful?", node_test(),"*"*50,"\n\n")
+menu = {
+    "1) node test":node_test,
+    "2) parse test":parse_test,
+    "3) agent test":player_test,
+    "4) game config test":config_test,
+    "5) territory assignment test":assign_territories_test,
+    "6) standard game test":standard_game_test,
+    "7) play standard game":play_game,
+    "8) GUI test":gui_test}
 
-if input("Run parse test? y/n ").lower() == "y":
-    print("Parse Test successful?", parse_test(),"*"*50,"\n\n")
-    
-if input("Run agent test? y/n ").lower() == "y":
-    print("Agent Test successful?", player_test(),"*"*50,"\n\n")
-    
-config_out = ""
-if input("Run game config test? y/n ").lower() == "y":
-    config_out = config_test()
-    print("Config Test returned", config_out,"*"*50,"\n\n")
-    
-if input("Run territory assignment test? y/n ").lower() == "y":
-    if len(config_out)!=0:
-        if input("Test with output of config test? y/n ").lower() == "y":
-            assign_territories_test(config_out)
-        else:
-            assign_territories_test()
+stop = False
+while not stop:
+    [print(x) for x in sorted(list(menu.keys()))]
+    user=0
+    try:
+        user=int(input("Make a selection: "))
+    except:
+        print("you MUST input a number")
+    if user in range(1,len(menu)+1):
+        menu[sorted(list(menu.keys()))[user-1]]()
+    elif user==0:
+        continue
     else:
-        assign_territories_test()
-
-if input("Run standard game test? y/n ").lower() == "y":
-    standard_game_test()
-
-if input("Play standard game? y/n ").lower() == 'y':
-    play_game()
+        stop=True

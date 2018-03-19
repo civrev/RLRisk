@@ -405,57 +405,6 @@ class Risk:
         pass
 
 
-
-class GUI(object):
-    '''
-    The GUI for the game, which is optional, and functions
-    related to the GUI
-    '''
-    
-    def __init__(self):
-        self.positions = self.gen_positions()
-        self.colors = self.gen_colors()
-        self.p2c = self.player_colors()
-
-    def gen_positions(self):
-        '''returns a dictionary that matches ID to node positions in pygame'''
-
-        positions = [
-            (80,120), (220,140), (440,100), (180,180), (240,200),
-            (340,200), (200,260), (280,270), (235,320), (355,370),
-            (430,430), (355,440), (370,500), (520,320), (620,305),
-            (640,345), (610,390), (610,460), (690,450), (930,390),
-            (1030,405), (960,470),(1050,480), (490,150), (515,200),
-            (570,150), (650,190), (570,210), (610,240), (515,250),
-            (680,280), (750,230), (800,150), (860,110), (980,110),
-            (1120,130), (920,180),(960,230), (1030,260), (920,280),
-            (800,310), (885,330)]
-
-        return dict(zip(range(42),positions))
-
-    def gen_colors(self):
-        '''returns a dictionary of RGB colors to be used in pygame'''
-
-        colors = {
-            "red":(255,0,0),
-            "green":(0,255,0),
-            "blue":(0,0,255),
-            "yellow":(255,255,0),
-            "purple":(255,0,255),
-            "orange":(255,128,0),
-            "white":(255,255,255),
-            "black":(0,0,0)
-            }
-
-        return colors
-
-    def player_colors(self):
-        '''assigned players colors in pygame'''
-
-        p2c = {0:"red",1:'green',2:'blue',3:'yellow',4:'purple',5:'orange'}
-
-        return p2c
-
 #---------------------------------------------
 #----------- Defualts for the game -----------
 #---------------------------------------------
