@@ -1,4 +1,4 @@
-# rlrisk
+# RLRisk
 
 A reinforcement learning environment based off the board game Risk. Designed with reinforcement learning in mind, this project aims to streamline research for economy-based games.
 
