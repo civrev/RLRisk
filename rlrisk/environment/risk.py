@@ -60,8 +60,44 @@ class Risk:
         System.out.println("The game is over! Player",
                            self.turn_order[(self.turn_count-1)%players],
                            "won the game!")
-                
+
+    def recruitment_phase(self, player):
+        '''perform recruitment phase'''
         
+        #recruit troops for turn
+        recruited = self.recruit_troops(player)
+
+        #place recruited troops, update the game state to reflect placement
+        self.place_troops(player,recruited)
+
+        #does agent have a valid card trade in set?
+        set_list,card_count = self.get_sets(player)
+
+        #if agent does, prompt them for whether or not they want to trade in a set
+        while len(set_list)!=0:
+            recruited = self.trade_in(player, set_list, card_count)
+            if recruited!=0:
+                #increase number of trade ins
+                self.state[-1]+=1
+
+                #place newly recruited troops
+                self.state = current_player.place_troops(recruited)
+            else:
+                set_list=[]
+
+        #recruitment phase is over
+
+    def attack_phase(self, player):
+        '''perform attack phase'''
+
+        current_player = self.players[player]
+
+        
+
+    def reinforce_phase(self, player):
+        '''perform reinforcement phase (Turn phase not RL)'''
+
+        pass
 
         
     def id_names(self):
@@ -378,106 +414,301 @@ class Risk:
 
         return defeated
 
-    def recruitment_phase(self, player):
-        '''perform recruitment phase'''
-        
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+
+    def place_troops(self, player, troops):
+        '''
+        Place troops into owned territory
+        takes in arguments the environment state and how many troops to place
+        for each troop it will call choose_placement() with a valid list of
+        territories to place troops
+        returns the altered state
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
         current_player = self.players[player]
-        
-        #recruit troops for turn
-        recruited = current_player.recruit_troops(self.state, self.continents)
 
-        #place recruited troops, update the game state to reflect placement
-        self.state = current_player.place_troops(self.state,recruited)
+        for troop in range(troops):
+            
+            valid = []
+            for t in territories:
+                
+                if territories[t][0]==player:
+                    valid.append(t)
 
-        #does agent have a valid card trade in set?
-        set_list,card_count = current_player.get_sets(self.state, self.card_faces)
+            chosen = current_player.choose_placement(valid, state, troops-troop)
+            territories[chosen][1]+=1
 
-        #if agent does, prompt them for whether or not they want to trade in a set
-        while len(set_list)!=0:
-            recruited = current_player.trade_in(self.state, self.trade_vals, set_list, count)
-            if recruited!=0:
-                #increase number of trade ins
-                self.state[-1]+=1
+        self.state = (steal_cards, turn_order, territories, cards, trade_ins)
 
-                #place newly recruited troops
-                self.state = current_player.place_troops(recruited)
+    def get_owned_territories(self, player):
+        '''returns a list of territories owned by the player'''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        return [t for t in territories if territories[t][0]==player]
+
+    def get_targets(self, player):
+        '''
+        returns a list of tuples with the first value being
+        a valid territory to attack from and the second a
+        potential target
+
+        NOTE: the board is also a required argument, as it needs
+        to know the connections to calculate valid attacks
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        #get all owned territories
+        owned = self.get_owned_territories(player)
+
+        #get all owned territories with more than 1 troop
+        valid = [t for t in owned if territories[t][1]>1]
+
+        #generate a list of tuples representing all valid attack options
+        attacks = []
+
+        for t in valid:
+            for link in board[t]:
+                if link not in owned:
+                    attacks.append((t,link))
+
+        return attacks
+
+    def recruit_troops(self, player):
+        '''
+        this calculates and returns the number of troops the player
+        recieves at the beginning of their turn not including card sets
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        recruit = 0
+
+        #get the territories this player controls
+        t_owned = self.get_owned_territories(player)
+
+        #count them
+        t_count = len(t_owned)
+
+        #Risk rules then floor divide by 3
+        t_count = t_count//3
+
+        #and you always get at least 3 troops from this
+        if t_count<3:
+            t_count=3
+
+        #now add to amount recruited
+        recruit+=t_count
+
+        #calculate for continents
+        for continent in self.continents:
+            c_owned=True
+            for territory in self.continents[continent][1:]:
+                if territory not in t_owned:
+                    c_owned=False
+
+            #if you own the continent, then get the troops
+            #allocated for that continent (stored in position 0)
+            if c_owned:
+                recruit += self.continents[continent][0]
+
+        return recruit
+
+    def get_sets(self, player, debug=False):
+        '''
+        now you have the total troops recruited from these areas
+        but there is still the trade ins to consider
+        what this will return is any combination of cards
+        the player owns that may be traded in
+        valid sets are
+        any 3 of same kind
+        1 for 1,5,10
+        any 2 and a wild
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        c_owned = [c for c in cards if cards[c]==player]
+
+        if debug:
+            print("DEBUG C_O:", c_owned)
+
+        set_list = []
+
+        one = []
+        five = []
+        ten = []
+        wild = []
+        for card in c_owned:
+            if self.card_faces[card] == 1:
+                one.append(card)
+            elif self.card_faces[card] == 5:
+                five.append(card)
+            elif self.card_faces[card] == 10:
+                ten.append(card)
             else:
-                set_list=[]
+                wild.append(card)
 
-        #recruitment phase is over
+        if debug:
+            print("DEBUG 1s:", one)
+            print("DEBUG 5s:", five)
+            print("DEBUG 10s:", ten)
+            print("DEBUG Wilds:", wild)
 
-    def attack_phase(self, player):
-        '''perform attack phase'''
+        #this calculates 3 of same kind
+        if len(one)>=3:
+            #in cases such as these there is no need to consider 3+
+            #since any 1 is as good as another 1
+            #append the first 3, if there are more than 3
+            #deal with it else where
+            set_list.append(one[:3])
+        if len(five)>=3:
+            set_list.append(five[:3])
+        if len(ten)>=3:
+            set_list.append(ten[:3])
 
-        current_player = self.players[player]
+        #calculates one of each kind
+        if len(one)>=2 and len(five)>=2 and len(ten)>=2:
+            #either you have two
+            set_list.append([one[0],five[0],ten[0]])
+            set_list.append([one[1],five[1],ten[1]])
+        elif len(one)>=1 and len(five)>=1 and len(ten)>=1:
+            #or you have just one
+            set_list.append([one[0],five[0],ten[0]])
 
-        
+        #calculates wildcard sets
+        for wc in wild:
+            if len(one)>=2:
+                #two of ones
+                set_list.append([one[0], one[1], wc])
+            if len(five)>=2:
+                #two of fives
+                set_list.append([five[0], five[1], wc])
+            if len(ten)>=2:
+                #two of tens
+                set_list.append([ten[0], ten[1], wc])
+            if len(one)!=0 and len(five)!=0:
+                #one 1 and one 5
+                set_list.append([one[0], five[0], wc])
+            if len(one)!=0 and len(ten)!=0:
+                #one 1 and one 10
+                set_list.append([one[0], ten[0], wc])
+            if len(ten)!=0 and len(five)!=0:
+                #one 5 and one 10
+                set_list.append([ten[0], five[0], wc])
 
-    def reinforce_phase(self, player):
-        '''perform reinforcement phase (Turn phase not RL)'''
+        return (set_list, len(c_owned))
 
-        pass
+    def trade_in(self, player, set_list, card_count):
+        '''
+        trade in which arrangement of cards the agent wants to trade in
+        NOTE: according to the rules if you have more than 5 cards you must
+        trade in at least one set
+        returns the amount of troops recruited
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        if card_count>=5:
+            must_trade=True
+        else:
+            must_trade=False
+
+        chosen = current_player.choose_trade_in(state, trade_vals, set_list, must_trade)
+
+        if chosen!=0:
+
+            #set all traded in cards to 7, the 'used' symbol
+            for c in chosen:
+                cards[c]=7
+
+            #award the player troops equivalent to trade in val
+            #if number of trade ins exceeds length of values
+            #just award the last one
+            if len(self.trade_vals)<trade_ins:
+                return self.trade_vals[-1]
+            else:
+                return self.trade_vals[trade_ins]
+            
+        #if agent decides not to trade in a set, then no troops will be awarded
+        return 0    
+
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
+    #-------------------------------------------------------------
 
 
-#---------------------------------------------
-#----------- Defualts for the game -----------
-#---------------------------------------------
 
-def standard_game(players, has_gui=False):
-    '''
-    generates a stadard game of Risk using a provided
-    list of agent objects up to a max of 6 and a minimum of 2
+    @staticmethod
+    def standard_game(players, has_gui=False):
+        '''
+        generates a stadard game of Risk using a provided
+        list of agent objects up to a max of 6 and a minimum of 2
 
-    the gui is optional
-        
+        the gui is optional
+            
 
-    the rules it will use are as follows
-    - random turn order
-    - random territory assignment
-    - traditional trade in values for Risk cards
+        the rules it will use are as follows
+        - random turn order
+        - random territory assignment
+        - traditional trade in values for Risk cards
 
-    '''
+        '''
 
-    if len(players)>6 or len(players)<2:
-        raise ValueError("Players must be between 2 and 6")
+        if len(players)>6 or len(players)<2:
+            raise ValueError("Players must be between 2 and 6")
 
-    turn_order = config.turn_order(len(players), 'r') #random turns
-    trade_vals = config.get_trade_vals('s') #standard trade in vals
-        
-    env = Risk(players, turn_order, trade_vals, False)
+        turn_order = config.turn_order(len(players), 'r') #random turns
+        trade_vals = config.get_trade_vals('s') #standard trade in vals
+            
+        env = Risk(players, turn_order, trade_vals, False)
 
-    env.deal_territories() #territories are assigned at random
+        env.deal_territories() #territories are assigned at random
 
-    return env #the pre-game environment is now set up
+        return env #the pre-game environment is now set up
 
-def custom_game(debug=False):
-    '''the user chooses settings from console'''
+    @staticmethod
+    def custom_game(debug=False):
+        '''the user chooses settings from console'''
 
-    #settings
-    players, deal, steal_cards = config.console_players()
-    turn_order = config.turn_order(players)
-    trade_values = config.console_trade_vals()
-    player_list = config.console_get_players(players)
+        #settings
+        players, deal, steal_cards = config.console_players()
+        turn_order = config.turn_order(players)
+        trade_values = config.console_trade_vals()
+        player_list = config.console_get_players(players)
 
-    if debug:
-        print("Turn order is:",turn_order)
+        if debug:
+            print("Turn order is:",turn_order)
 
-    #generate the environment with settings
-    env = Risk(player_list, turn_order,trade_values,steal_cards)
+        #generate the environment with settings
+        env = Risk(player_list, turn_order,trade_values,steal_cards)
 
-    #set up pre-game territory allocation
-    if deal:
-        env.deal_territories()
-    else:
-        #players are prompted by turn order for a territory selection
-        valid = list(range(42))
-        for index in range(42):
-            current_player = player_list[turn_order[index%len(turn_order)]]
-            chosen, env.state = current_player.pick_initial_territories(valid, env.state)
-            valid.remove(chosen)
+        #set up pre-game territory allocation
+        if deal:
+            env.deal_territories()
+        else:
+            #players are prompted by turn order for a territory selection
+            valid = list(range(42))
+            for index in range(42):
+                current_player = player_list[turn_order[index%len(turn_order)]]
+                chosen, env.state = current_player.pick_initial_territories(valid, env.state)
+                valid.remove(chosen)
 
-    if debug:
-        [print(x) for x in env.state]
+        if debug:
+            [print(x) for x in env.state]
 
-    return env #the environment is now ready to begin playing
+        return env #the environment is now ready to begin playing
+
+    
     

@@ -6,7 +6,8 @@ import random
 import os
 import pygame
 
-from rlrisk.environment import risk, config, gui
+from rlrisk.environment import  config, gui
+from rlrisk.environment.risk import Risk
 from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
 
@@ -14,7 +15,7 @@ from rlrisk.agents.human import Human
 def node_test():
     '''test the nodes dictionaries'''
 
-    env = risk.Risk([BaseAgent(x) for x in range(6)],
+    env = Risk([BaseAgent() for x in range(6)],
                     [0,1,2,3,4,5],[4,6,8,10,15,20], True)
     
     node2name,name2node = env.id_names()
@@ -61,9 +62,9 @@ def event_test():
 def gui_test():
     '''testing gui painting territories by player and troop count'''
 
-    players = [BaseAgent(x) for x in range(6)]
+    players = [BaseAgent() for x in range(6)]
 
-    env = risk.standard_game(players)
+    env = Risk.standard_game(players)
 
     graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
 
@@ -76,9 +77,9 @@ def attack_phase_test():
     '''test the parts of the attack phase for the base agent'''
 
     #generate environment
-    players = [BaseAgent(x) for x in range(6)]
+    players = [BaseAgent() for x in range(6)]
 
-    env = risk.standard_game(players)
+    env = Risk.standard_game(players)
 
     #unpack initial state
     steal_cards, turn_order, territories, cards, trade_ins = env.state
@@ -113,7 +114,7 @@ def parse_test():
     test = "Hello World!"
     print(test,sys.getsizeof(test), "bytes")
 
-    env = risk.Risk([BaseAgent(x) for x in range(6)],
+    env = Risk([BaseAgent() for x in range(6)],
                     [0,1,2,3,4,5],[4,6,8,10,15,20], True)
     steal_cards, turn_order, territories, cards, trade_ins = env.state
 
@@ -148,15 +149,14 @@ def player_test():
     '''
 
     #get some initial environment
-    env = risk.Risk([BaseAgent(x) for x in range(6)],
+    env = Risk([BaseAgent() for x in range(6)],
                     [0,1,2,3,4,5],[4,6,8,10,15,20], True)
     steal_cards, turn_order, territories, cards, trade_ins = env.state
 
     #create agent as player 1
-    agent_demo = BaseAgent(0)
+    agent_demo = BaseAgent()
 
     print(agent_demo)
-    print("Class Vars (player)",agent_demo.player)
 
     #test sets
     #([cards owned],[correct sets])
@@ -172,9 +172,9 @@ def player_test():
         print("data:",data)
         temp_cards = dict(cards)
         for c in data:
-            temp_cards[c]=agent_demo.player
+            temp_cards[c]=0 #let's say our agent is player 0
         env.state = steal_cards, turn_order, territories, temp_cards, trade_ins
-        sets, c_owned  = agent_demo.get_sets(env.state, env.card_faces, debug=True)
+        sets, c_owned  = env.get_sets(0, debug=True)
         env.state = steal_cards, turn_order, territories, cards, trade_ins
 
         print("Sets detected:",sets)
@@ -199,12 +199,12 @@ def config_test():
 
     return players, deal, order, trade_vals, steal_cards
 
-def assign_territories_test(players=[BaseAgent(x) for x in range(6)], deal=True, order=[0,1,2,3,4,5], trade_vals=[4,6,8,10,15,20], steal_cards=True):
+def assign_territories_test(players=[BaseAgent() for x in range(6)], deal=True, order=[0,1,2,3,4,5], trade_vals=[4,6,8,10,15,20], steal_cards=True):
     '''
     testing the assigning of territories done at game start
     Optionally you can pass it the outcome of config_test()
     '''
-    env = risk.Risk(players,order,trade_vals, steal_cards)
+    env = Risk(players,order,trade_vals, steal_cards)
     env.deal_territories()
     print(env.state)
     
@@ -215,15 +215,15 @@ def standard_game_test():
     that generates a default environment
     '''
 
-    players = [BaseAgent(x) for x in range(6)]
+    players = [BaseAgent() for x in range(6)]
 
-    env = risk.standard_game(players)
+    env = Risk.standard_game(players)
 
     print(env)
 
 def play_game():
     '''plays a standard game'''
-    env = risk.standard_game([BaseAgent(x) for x in range(5)]+[Human(5)])
+    env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()])
 
     env.play()
 
