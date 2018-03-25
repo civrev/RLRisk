@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = 'rlrisk',
-    version = '0.2',
+    version = '0.3',
     description = 'A reinforcement learning environment based off the board game Risk',
     author = 'Christian Watts',
     author_email = 'civrev@gmail.com',

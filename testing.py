@@ -96,11 +96,11 @@ def attack_phase_test():
 
     #compare valid targets for validity
     print("Owned---------------------------------------")
-    [print(x,territories[x]) for x in p.get_owned_territories(env.state)]
+    [print(x,territories[x]) for x in env.get_owned_territories(0)]
     print("Board --------------------------------------")
     [print(t,v) for t,v in env.board.items()]
     print("Valid Attacks ------------------------------")
-    [print(x) for x in p.get_targets(env.state, env.board)]
+    [print(x) for x in env.get_targets(0)]
 
     
 
@@ -123,8 +123,8 @@ def parse_test():
         territories[key][1]=random.randrange(1,2000000)
 
     state = (steal_cards, turn_order, territories, cards, trade_ins) #init state
-    st_string = env.get_state(state) #turned into string
-    state_2 = env.parse_state(st_string, debug=True)
+    st_string = BaseAgent.get_state(state) #turned into string
+    state_2 = BaseAgent.parse_state(st_string, debug=True)
 
     
     steal_cards2, turn_order2, territories2, cards2, trade_ins2 = state_2
@@ -132,7 +132,7 @@ def parse_test():
     for t in territories:
         print(territories[t],territories2[t])
     
-    st_string_2 = env.get_state(state_2)
+    st_string_2 = BaseAgent.get_state(state_2)
 
     print("State String Size:",sys.getsizeof(st_string),st_string)
 
@@ -227,6 +227,10 @@ def play_game():
 
     env.play()
 
+def cpu_play_game():
+    '''Base Agents only play standard game'''
+    Risk.standard_game([BaseAgent() for x in range(6)]).play()
+
 
 
 #****************************************************************
@@ -240,7 +244,8 @@ menu = {
     "07) play standard game":play_game,
     "08) event test":event_test,
     "09) gui test":gui_test,
-    "10) attack phase test": attack_phase_test}
+    "10) attack phase test": attack_phase_test,
+    "11) Computer plays standard game":cpu_play_game}
 
 stop = False
 while not stop:

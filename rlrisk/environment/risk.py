@@ -18,6 +18,11 @@ class Risk:
         trade_vals: sequencial values of traded in card sets (also a list)
         random_deal: whether players pick their territories at game start or are assigned
         '''
+
+        #house keeping for players
+        for num,p in enumerate(players):
+            p.set_player(num)
+
         self.players = players #the agents that play the game
         self.turn_count = 0 #initialize turn count at 0
         self.node2name, self.name2node = self.id_names() #dictionaries to get territory name from ID
@@ -30,17 +35,25 @@ class Risk:
     def play(self, debug=False):
         '''this is the main game loop'''
 
-        players = len(self.players)
+        num_players = len(self.players)
 
+        troops = self.starting_troops()
+
+        for turn in self.turn_order:
+            owned = self.get_owned_territories(turn)
+            self.place_troops(turn, troops-len(owned))
+            
+
+        #begin main game loop
         while not self.winner(debug):
 
             #whose turn is it?
-            turn = self.turn_order[self.turn_count%players]
+            turn = self.turn_order[self.turn_count%num_players]
 
             #is this player defeated? If so skip turn
             while self.defeated(turn, debug):
                 self.turn_count+=1
-                turn = self.turn_order[self.turn_count%players]
+                turn = self.turn_order[self.turn_count%num_players]
 
             #perform recruitment
             self.recruitment_phase(turn)
@@ -56,9 +69,13 @@ class Risk:
             #turn is over, increase turn count
             self.turn_count+=1
 
+            
+        #end game loop
         #exit message
-        System.out.println("The game is over! Player",
-                           self.turn_order[(self.turn_count-1)%players],
+
+        print("DEBUG end state",self.state)
+        print("The game is over! Player",
+                           self.turn_order[(self.turn_count-1)%num_players],
                            "won the game!")
 
     def recruitment_phase(self, player):
@@ -91,11 +108,41 @@ class Risk:
         '''perform attack phase'''
 
         current_player = self.players[player]
+        targets = self.get_targets(player)
+        choice = current_player.choose_attack(self.state, targets)
 
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        while choice!=False:
+
+            #performs a single iteration of combat
+            result = self.combat(choice)
+
+            #result 1 if attacker wins, -1 if defender wins
+            #0 if no result yet
+            if result!=0:
+                
+                if result==1:
+                    self.reward_card(player) #give player a card
+                    attack_from,attack_to = choice
+                    territories[attack_from][1]-=1
+                    territories[attack_to][1]=1
+                    territories[attack_to][0]=player
+
+                    self.after_attack_reinforce(player,choice)
+
+                    
+                    
+                    
+                break
+
+            else:
+                current_player.continue_attack(self.state, choice)
+        
         
 
     def reinforce_phase(self, player):
-        '''perform reinforcement phase (Turn phase not RL)'''
+        '''perform reinforcement phase (Risk turn phase not RL)'''
 
         pass
 
@@ -172,6 +219,17 @@ class Risk:
 
         return (board, continents, card_faces)
 
+    def starting_troops(self):
+        '''
+        returns the amount of troops each player gets at start
+        NOTE: rule variations here are that 2 players are
+        getting 40. In reality this package is not supporting
+        the 2 person game according to the rules
+
+        All too many/too few player errors will throw a key error here
+        '''
+        return {2:40,3:35,4:30,5:25,6:20}[len(self.players)]
+
     def gen_init_state(self, steal_cards, turn_order, debug=False):
         '''
         generates the initial state of the game
@@ -211,154 +269,6 @@ class Risk:
         #this just packs the info into a state tuple that is used to begin the game
         return (steal_cards, turn_order, territories, cards, 0)
 
-    def parse_state(self, state_string, debug=False):
-        '''
-        gets the state from the state representation string
-        set debug=True for debugging 
-        '''
-
-        territories = {}
-        cards = {}
-        trade_ins = 0
-
-        state_string = str(state_string)
-
-        #the first character is the steal_cards setting
-        steal_cards = state_string[0]
-        if steal_cards == "1":
-            steal_cards = True
-        elif steal_cards == "2":
-            steal_cards = False
-        else:
-            raise ValueError("Steal cards was " + steal_cards + " instead of \'1\' or \'2\'")
-
-        state_string = state_string[1:]
-
-        #there is a "6" that seperates turn order from the rest of the state
-        six_loc = state_string.find("6")
-        turn_order = [int(x) for x in state_string[:six_loc] if len(x)!=0]
-
-        if debug:
-            print("Turn Order:",turn_order)
-        
-        state_string = state_string[six_loc+2:]
-        
-        #deconstruct the state_string (territories and cards)
-        for id_num in range(44):
-            
-            if debug:
-                print("DEBUG ID:", id_num, state_string[:10])
-                
-            if id_num!=0:
-                #remove the next id #, the leading 0 is implied
-                state_string = state_string[len(str(id_num)):]
-                
-            if id_num<42:
-                #parses the card owner, then territory owner, then troop count
-                
-                c_owner = state_string[0]
-                t_owner = state_string[1]
-                
-                state_string = state_string[2:] #don't need them anymore
-
-                #there is a slightly complicated way in which troop numbers need to be parsed
-                #to avoid errors
-                #for example if there were 102 troops in territory 2 then the beginning of the state string
-                #may look like 1020200310234 is valid and it may
-                #generate errors relying solely on my trailing 0 delimiter
-                #NOTE: this does NOT eliminated the problems when parsing the state_string
-                #merely reduces the chance of one from occuring
-
-                troops=""
-
-                unsolved = True
-
-                while(unsolved):
-                    nid=str(id_num+1)
-                    nid_loc=state_string.find("0"+nid)
-                    temp_c_owner = int(state_string[nid_loc+1+len(nid)])
-                    temp_t_owner = int(state_string[nid_loc+2+len(nid)])
-                    temp_non_zero = int(state_string[nid_loc+3+len(nid)])
-                
-                    if temp_c_owner<8 and temp_t_owner<6 and temp_non_zero!=0 and nid!="42":
-                        #if this is true, then it is much more unlikely to have a bad parse
-                        troops = troops + state_string[:nid_loc]
-                        state_string = state_string[nid_loc+1:]
-                        unsolved = False
-                        
-                    elif nid=="42":
-                        #on id_num 41 nid = 42 which is a wild card and must be handed differently
-                        if debug:
-                            print("Debug ID:",id_num,"C_O:",temp_c_owner,"T_O:",temp_t_owner,"non0:",state_string[:10])
-                        if temp_c_owner<8 and temp_t_owner==4 and temp_non_zero==3:
-                            troops = troops + state_string[:nid_loc]
-                            state_string = state_string[nid_loc+1:]
-                            unsolved = False
-                    else:
-                        #this is the error handling part
-                        #when a difficult parsing situation occurs, it's handled here
-                        #it will go to the trouble location (what is throwing a false parse)
-                        #and go ahead and add that to troops, then tries to parse again
-                        if debug:
-                            print("Debug ID:",id_num,"C_O:",temp_c_owner,"T_O:",temp_t_owner,"non0:",state_string[:10])
-                        troops = troops + state_string[:nid_loc+1]
-                        state_string = state_string[nid_loc+1:]
-
-                territories[id_num] = [int(t_owner),int(troops)]
-                cards[id_num] = int(c_owner)
-
-            else:
-                #must be a wild card (42/43)
-                c_owner = int(state_string[0])
-                state_string = state_string[1:]
-                cards[id_num] = c_owner
-
-        trade_ins=int(state_string) #if it parses correctly, this should be all that remains
-
-        if trade_ins > len(self.trade_vals):
-            #trade ins go up to 15 possibilities
-            print(territories)
-            print("*"*50)
-            print(cards)
-            print("*"*50)
-            print(trade_ins)
-            raise ValueError('Parsed incorrectly or impossible trade in value for this game')
-
-        return (steal_cards, turn_order, territories, cards, trade_ins) #this is what a state consist of
-
-    def get_state(self, state):
-        '''
-        gets the state representation from the state
-        state = (steal_cards, turn_order, territories, cards, trade_ins)
-        '''
-
-        steal_cards, turn_order, territories, cards, trade_ins = state
-
-        #steal_cards is first
-        if steal_cards:
-            state_string = "1" #for yes steal cards
-        else:
-            state_string = "2" #for no do not steal cards
-
-        #the state string starts with turn order after steal_cards setting
-        state_string += "".join([str(x) for x in turn_order])+"6"
-        
-        for key in range(44):
-            if key in territories:
-                t_owner,troops = territories[key]
-                c_owner = cards[key]
-                state_string = state_string + str(key)+str(c_owner)+str(t_owner)+str(troops)+"0"
-            else:
-                #must be wildcard (key 42/43)
-                owner = cards[key]
-                state_string = state_string + str(key)+str(owner)
-
-        state_string = state_string + str(trade_ins)
-
-        state_string = int(state_string)
-
-        return state_string
-
     def deal_territories(self):
         '''deals territories randomly, returns nothing'''
 
@@ -375,6 +285,7 @@ class Risk:
             remaining.remove(chosen)
 
             territories[chosen][0]=player_id
+            territories[chosen][1]=1
 
         self.state = (steal_cards, turn_order, territories, cards, trade_ins)
 
@@ -414,13 +325,6 @@ class Risk:
 
         return defeated
 
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-
     def place_troops(self, player, troops):
         '''
         Place troops into owned territory
@@ -442,7 +346,7 @@ class Risk:
                 if territories[t][0]==player:
                     valid.append(t)
 
-            chosen = current_player.choose_placement(valid, state, troops-troop)
+            chosen = current_player.choose_placement(valid, self.state, troops-troop)
             territories[chosen][1]+=1
 
         self.state = (steal_cards, turn_order, territories, cards, trade_ins)
@@ -460,6 +364,9 @@ class Risk:
         a valid territory to attack from and the second a
         potential target
 
+        also adds False to the end (position -1) which represents
+        choosing not to attack
+
         NOTE: the board is also a required argument, as it needs
         to know the connections to calculate valid attacks
         '''
@@ -476,11 +383,61 @@ class Risk:
         attacks = []
 
         for t in valid:
-            for link in board[t]:
+            for link in self.board[t]:
                 if link not in owned:
                     attacks.append((t,link))
 
+        attacks.append(False)
+
         return attacks
+
+    def combat(self, attack):
+        '''does the standard dice roll combat for Risk for a given attack'''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        attacker, defender = attack
+
+        max_attack_troops = territories[attacker][1]
+        max_defend_troops = territories[defender][1]
+
+        defending = min((2, max_defend_troops))
+
+        options = [x+1 for x in range(3) if max_attack_troops>x+1]
+
+        attacker_player = self.players[territories[attacker][0]]
+
+        attacking = attacker_player.choose_attack_size(self.state, options)
+
+        a_rolls = []
+        for x in range(attacking):
+            a_rolls.append(random.randrange(1,7))
+
+        d_rolls = []
+        for x in range(defending):
+            d_rolls.append(random.randrange(1,7))
+
+        for roll in range(min((len(d_rolls),len(a_rolls)))):
+            a = max(a_rolls)
+            d = max(d_rolls)
+            a_rolls.remove(a)
+            d_rolls.remove(d)
+
+            if a>d:
+                max_defend_troops-=1
+            else:
+                max_attack_troops-=1
+
+        territories[attacker][1] = max_attack_troops
+        territories[defender][1] = max_defend_troops
+
+        if max_defend_troops == 0:
+            return 1
+        
+        if max_attack_troops == 1:
+            return -1
+
+        return 0
 
     def recruit_troops(self, player):
         '''
@@ -622,33 +579,73 @@ class Risk:
         else:
             must_trade=False
 
-        chosen = current_player.choose_trade_in(state, trade_vals, set_list, must_trade)
+        current_player = self.players[player]
+
+        chosen = current_player.choose_trade_in(self.state, self.trade_vals, set_list, must_trade)
 
         if chosen!=0:
 
-            #set all traded in cards to 7, the 'used' symbol
+            #set all traded in cards to 7, the 'unowned'
             for c in chosen:
-                cards[c]=7
+                cards[c]=6
 
             #award the player troops equivalent to trade in val
             #if number of trade ins exceeds length of values
             #just award the last one
             if len(self.trade_vals)<trade_ins:
+                trade_ins+=1
                 return self.trade_vals[-1]
             else:
-                return self.trade_vals[trade_ins]
+                trade_ins+=1
+                return self.trade_vals[trade_ins-1]
             
         #if agent decides not to trade in a set, then no troops will be awarded
-        return 0    
+        return 0
 
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
-    #-------------------------------------------------------------
+    def reward_card(self, player):
+        '''set's an unowned card to the player at random'''
 
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
 
+        #get all cards that aren't owned
+        c_unowned = [c for c in cards if cards[c]==6]
+
+        #choose one at random
+        chosen = random.choice(c_unowned)
+
+        #set that card to now owned by player
+        cards[chosen] = player
+
+    def players_choose_territories(self):
+        '''for when territories are not dealt at random'''
+        #players are prompted by turn order for a territory selection
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+        
+        valid = list(range(42))
+        for index in range(42):
+
+            turn = self.turn_order[self.turn_count%len(self.players)]
+            
+            current_player = self.players[turn]
+            chosen = current_player.pick_initial_territories(valid)
+
+            territories[chosen]=[turn,1]
+
+            valid.remove(chosen)
+
+    def after_attack_reinforce(self, player, attack):
+        '''this method handles reinforcement after attacking'''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        frm,to = attack
+        
+        divy_up = territories[frm][1]-1
+
+        for t in range(divy_up):
+            choice = self.players[player].after_attack_troops(self.state, frm, to, divy_up-t)
+            territories[choice][1]+=1
 
     @staticmethod
     def standard_game(players, has_gui=False):
@@ -698,12 +695,8 @@ class Risk:
         if deal:
             env.deal_territories()
         else:
-            #players are prompted by turn order for a territory selection
-            valid = list(range(42))
-            for index in range(42):
-                current_player = player_list[turn_order[index%len(turn_order)]]
-                chosen, env.state = current_player.pick_initial_territories(valid, env.state)
-                valid.remove(chosen)
+            env.players_choose_territories()
+            
 
         if debug:
             [print(x) for x in env.state]
