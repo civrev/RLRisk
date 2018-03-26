@@ -6,11 +6,12 @@ See instructions https://www.hasbro.com/common/instruct/risk.pdf
 
 import random
 from rlrisk.environment import config
+from rlrisk.environment import gui
 
 class Risk:
     '''Game Environment for Risk World Domination'''
 
-    def __init__(self, players, turn_order, trade_vals, steal_cards):
+    def __init__(self, players, turn_order, trade_vals, steal_cards=False, has_gui=False):
         '''
         setting up for the game
         the arguments here are the rule settings for the game
@@ -23,6 +24,11 @@ class Risk:
         for num,p in enumerate(players):
             p.set_player(num)
 
+        self.has_gui = has_gui #whether or not the gui should be displayed
+
+        if has_gui:
+            self.gui = gui.GUI()
+            
         self.players = players #the agents that play the game
         self.turn_count = 0 #initialize turn count at 0
         self.node2name, self.name2node = self.id_names() #dictionaries to get territory name from ID
@@ -39,9 +45,16 @@ class Risk:
 
         troops = self.starting_troops()
 
+        if self.has_gui:
+            self.gui.recolor(self.state)
+
         for turn in self.turn_order:
             owned = self.get_owned_territories(turn)
             self.place_troops(turn, troops-len(owned))
+            if self.has_gui:
+                self.gui.recolor(self.state)
+
+            
             
 
         #begin main game loop
@@ -669,7 +682,7 @@ class Risk:
         turn_order = config.turn_order(len(players), 'r') #random turns
         trade_vals = config.get_trade_vals('s') #standard trade in vals
             
-        env = Risk(players, turn_order, trade_vals, False)
+        env = Risk(players, turn_order, trade_vals, False, has_gui)
 
         env.deal_territories() #territories are assigned at random
 

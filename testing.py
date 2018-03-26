@@ -227,9 +227,19 @@ def play_game():
 
     env.play()
 
+def play_game_with_gui():
+    '''plays a standard game'''
+    env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()], True)
+
+    env.play()
+
 def cpu_play_game():
     '''Base Agents only play standard game'''
     Risk.standard_game([BaseAgent() for x in range(6)]).play()
+
+def cpu_play_game_with_gui():
+    '''Base Agents only play standard game'''
+    Risk.standard_game([BaseAgent() for x in range(6)], True).play()
 
 
 
@@ -245,7 +255,9 @@ menu = {
     "08) event test":event_test,
     "09) gui test":gui_test,
     "10) attack phase test": attack_phase_test,
-    "11) Computer plays standard game":cpu_play_game}
+    "11) Computer plays standard game":cpu_play_game,
+    "12) Computer play, with GUI":cpu_play_game_with_gui,
+    "13) User play, with GUI":play_game_with_gui}
 
 stop = False
 while not stop:

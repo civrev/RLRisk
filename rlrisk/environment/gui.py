@@ -4,7 +4,7 @@ it can be used by setting the GUI flag when
 creating a Risk object
 '''
 
-import pygame
+import pygame, os
 
 class GUI(object):
     '''
@@ -24,7 +24,8 @@ class GUI(object):
         pygame.display.set_caption("RLRisk - Reinforcement Learning Environment")
 
         #load image and make background
-        self.background = pygame.image.load(debug_path+"board.bmp")
+        print(os.getcwd())
+        self.background = pygame.image.load(os.path.join(os.getcwd(),'rlrisk/environment/board.bmp'))
         self.size = self.background.get_size()
         self.screen = pygame.display.set_mode(self.size)
         self.backgroundRect = self.background.get_rect()
@@ -33,12 +34,15 @@ class GUI(object):
         #get fonts working
         pygame.font.init()
         self.d_font = pygame.font.get_default_font()
+        self.id_font = pygame.font.Font(self.d_font, 20)
         self.font = pygame.font.Font(self.d_font, 12)
 
         #paint white circles on territories
         [pygame.draw.circle(self.screen,self.colors["white"],(x,y),14, 0) for x,y in self.positions.values()]
+
         pygame.display.flip()
 
+            
     def loop_event(self, target_event_type):
         '''
         Loops through all the pygame events,
@@ -71,6 +75,7 @@ class GUI(object):
 
         #get the territories dictionary
         territories = state[2]
+        cards = state[3]
 
         #now color and text cirlces
         for key in territories:
@@ -83,9 +88,13 @@ class GUI(object):
 
             #now add the troop count font
             label = self.font.render(str(troops),1,self.colors['black'])
+
+            #and the province id
+            label_id = self.id_font.render(str(key),1,self.colors['white'])
             
             x,y = self.positions[key]
             self.screen.blit(label,(x-12,y-6))
+            self.screen.blit(label_id,(x-6,y-30))
 
         pygame.display.flip()
 
