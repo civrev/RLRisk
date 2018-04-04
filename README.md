@@ -17,6 +17,11 @@ pip install pygame
 
 ### Installing
 
+The easiest way to install this package is through PyPi
+```
+pip install rlrisk
+```
+
 To install this package, clone the repository to your local computer
 
 ```
@@ -24,6 +29,9 @@ git clone https://github.com/civrev/RLRisk
 ```
 
 Then navigate to that directory and run setup.py
+```
+python setup.py install
+```
 
 ## Working with RLRisk
 
