@@ -37,6 +37,7 @@ class Risk:
         self.turn_order = turn_order #order in which players take turns, includes # of players
         self.trade_vals = trade_vals #values for card set trade ins
         self.steal_cards = steal_cards #whether or not cards are taken after player defeat
+        self.record = [] #records all states in the game
 
     def play(self, debug=False):
         '''this is the main game loop'''
@@ -59,6 +60,10 @@ class Risk:
 
         #begin main game loop
         while not self.winner(debug):
+
+            ss = self.get_state(self.state)
+            print(ss)
+            self.record.append(ss)
 
             #whose turn is it?
             turn = self.turn_order[self.turn_count%num_players]
@@ -86,7 +91,6 @@ class Risk:
         #end game loop
         #exit message
 
-        print("DEBUG end state",self.state)
         print("The game is over! Player",
                            self.turn_order[(self.turn_count-1)%num_players],
                            "won the game!")
@@ -143,9 +147,6 @@ class Risk:
                     territories[attack_to][0]=player
 
                     self.after_attack_reinforce(player,choice)
-
-                    
-                    
                     
                 break
 
@@ -654,11 +655,17 @@ class Risk:
 
         frm,to = attack
         
+        
         divy_up = territories[frm][1]-1
 
         for t in range(divy_up):
             choice = self.players[player].after_attack_troops(self.state, frm, to, divy_up-t)
-            territories[choice][1]+=1
+            if choice==frm:
+                territories[frm][1]+= 1
+                territories[to][1]-= 1
+            else:
+                territories[to][1]+= 1
+                territories[frm][1]-= 1
 
     @staticmethod
     def standard_game(players, has_gui=False):
@@ -715,6 +722,160 @@ class Risk:
             [print(x) for x in env.state]
 
         return env #the environment is now ready to begin playing
+
+    @staticmethod
+    def get_state(state):
+        '''
+        gets the state representation from the state
+        state = (steal_cards, turn_order, territories, cards, trade_ins)
+        '''
+
+        steal_cards, turn_order, territories, cards, trade_ins = state
+
+        #steal_cards is first
+        if steal_cards:
+            state_string = "1" #for yes steal cards
+        else:
+            state_string = "2" #for no do not steal cards
+
+        #the state string starts with turn order after steal_cards setting
+        state_string += "".join([str(x) for x in turn_order])+"6"
+        
+        for key in range(44):
+            if key in territories:
+                t_owner,troops = territories[key]
+                c_owner = cards[key]
+                state_string = state_string + str(key)+str(c_owner)+str(t_owner)+str(troops)+"0"
+            else:
+                #must be wildcard (key 42/43)
+                owner = cards[key]
+                state_string = state_string + str(key)+str(owner)
+
+        state_string = state_string + str(trade_ins)
+
+        state_string = int(state_string)
+
+        return state_string
+
+    @staticmethod
+    def parse_state(state_string, debug=False):
+        '''
+        gets the state from the state representation string
+        set debug=True for debugging 
+        '''
+
+        territories = {}
+        cards = {}
+        trade_ins = 0
+
+        state_string = str(state_string)
+
+        #the first character is the steal_cards setting
+        steal_cards = state_string[0]
+        if steal_cards == "1":
+            steal_cards = True
+        elif steal_cards == "2":
+            steal_cards = False
+        else:
+            raise ValueError("Steal cards was " + steal_cards + " instead of \'1\' or \'2\'")
+
+        state_string = state_string[1:]
+
+        #there is a "6" that seperates turn order from the rest of the state
+        six_loc = state_string.find("6")
+        turn_order = [int(x) for x in state_string[:six_loc] if len(x)!=0]
+
+        if debug:
+            print("Turn Order:",turn_order)
+        
+        state_string = state_string[six_loc+2:]
+        
+        #deconstruct the state_string (territories and cards)
+        for id_num in range(44):
+            
+            if debug:
+                print("DEBUG ID:", id_num, state_string[:10])
+                
+            if id_num!=0:
+                #remove the next id #, the leading 0 is implied
+                state_string = state_string[len(str(id_num)):]
+                
+            if id_num<42:
+                #parses the card owner, then territory owner, then troop count
+                
+                c_owner = state_string[0]
+                t_owner = state_string[1]
+                
+                state_string = state_string[2:] #don't need them anymore
+
+                #there is a slightly complicated way in which troop numbers need to be parsed
+                #to avoid errors
+                #for example if there were 102 troops in territory 2 then the beginning of the state string
+                #may look like 1020200310234 is valid and it may
+                #generate errors relying solely on my trailing 0 delimiter
+                #NOTE: this does NOT eliminated the problems when parsing the state_string
+                #merely reduces the chance of one from occuring
+
+                troops=""
+
+                unsolved = True
+
+                while(unsolved):
+                    nid=str(id_num+1)
+                    nid_loc=state_string.find("0"+nid)
+                    temp_c_owner = int(state_string[nid_loc+1+len(nid)])
+                    temp_t_owner = int(state_string[nid_loc+2+len(nid)])
+                    temp_non_zero = int(state_string[nid_loc+3+len(nid)])
+                
+                    if temp_c_owner<8 and temp_t_owner<6 and temp_non_zero!=0 and nid!="42":
+                        #if this is true, then it is much more unlikely to have a bad parse
+                        troops = troops + state_string[:nid_loc]
+                        state_string = state_string[nid_loc+1:]
+                        unsolved = False
+                        
+                    elif nid=="42":
+                        #on id_num 41 nid = 42 which is a wild card and must be handed differently
+                        if debug:
+                            print("Debug ID:",id_num,"C_O:",temp_c_owner,"T_O:",temp_t_owner,"non0:",state_string[:10])
+                        if temp_c_owner<8 and temp_t_owner==4 and temp_non_zero==3:
+                            troops = troops + state_string[:nid_loc]
+                            state_string = state_string[nid_loc+1:]
+                            unsolved = False
+                    else:
+                        #this is the error handling part
+                        #when a difficult parsing situation occurs, it's handled here
+                        #it will go to the trouble location (what is throwing a false parse)
+                        #and go ahead and add that to troops, then tries to parse again
+                        if debug:
+                            print("Debug ID:",id_num,"C_O:",temp_c_owner,"T_O:",temp_t_owner,"non0:",state_string[:10])
+                        troops = troops + state_string[:nid_loc+1]
+                        state_string = state_string[nid_loc+1:]
+
+                territories[id_num] = [int(t_owner),int(troops)]
+                cards[id_num] = int(c_owner)
+
+            else:
+                #must be a wild card (42/43)
+                c_owner = int(state_string[0])
+                state_string = state_string[1:]
+                cards[id_num] = c_owner
+
+        trade_ins=int(state_string) #if it parses correctly, this should be all that remains
+
+        if trade_ins > 1000:
+            #trade ins go up to 15 possibilities, generally
+            #This is a debugging help feature
+            #you'd have to change this is you had a set of trade in vals
+            #greater than length 1,000
+            print(territories)
+            print("*"*50)
+            print(cards)
+            print("*"*50)
+            print(trade_ins)
+            raise ValueError('Parsed incorrectly or impossible trade in value for this game')
+
+        return (steal_cards, turn_order, territories, cards, trade_ins) #this is what a state consist of
+
 
     
     

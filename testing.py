@@ -26,9 +26,7 @@ def node_test():
             print("ID",i_d,"is not",name2node[node2name[i_d]])
             return False
 
-    print(os.getcwd()) #debugging image locating
-
-    graphics = gui.GUI(os.getcwd()+"/rlrisk/environment/")
+    graphics = gui.GUI()
 
     for num in range(42):
         print("Name:",node2name[num],"\tID:",num,"Position",graphics.positions[num])
@@ -123,8 +121,8 @@ def parse_test():
         territories[key][1]=random.randrange(1,2000000)
 
     state = (steal_cards, turn_order, territories, cards, trade_ins) #init state
-    st_string = BaseAgent.get_state(state) #turned into string
-    state_2 = BaseAgent.parse_state(st_string, debug=True)
+    st_string = Risk.get_state(state) #turned into string
+    state_2 = Risk.parse_state(st_string, debug=True)
 
     
     steal_cards2, turn_order2, territories2, cards2, trade_ins2 = state_2
@@ -132,11 +130,13 @@ def parse_test():
     for t in territories:
         print(territories[t],territories2[t])
     
-    st_string_2 = BaseAgent.get_state(state_2)
+    st_string_2 = Risk.get_state(state_2)
 
-    print("State String Size:",sys.getsizeof(st_string),st_string)
+    print("State String  1 Size:",sys.getsizeof(st_string),st_string)
 
     print("State String 2 Size:",sys.getsizeof(st_string_2),st_string_2)
+
+    print("Test passed?",st_string==st_string_2)
 
 
     #this compares state->rep rep->state lossless conversion

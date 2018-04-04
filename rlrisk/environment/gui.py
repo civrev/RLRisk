@@ -12,8 +12,7 @@ class GUI(object):
     related to the GUI
     '''
     
-    def __init__(self, debug_path=""):
-        self.positions = self.gen_positions()
+    def __init__(self):
         self.colors = self.gen_colors()
         self.p2c = self.player_colors()
 
@@ -27,6 +26,7 @@ class GUI(object):
         print(os.getcwd())
         self.background = pygame.image.load(os.path.join(os.getcwd(),'rlrisk/environment/board.bmp'))
         self.size = self.background.get_size()
+        self.positions = self.gen_positions()
         self.screen = pygame.display.set_mode(self.size)
         self.backgroundRect = self.background.get_rect()
         self.screen.blit(self.background, self.backgroundRect)
@@ -118,6 +118,12 @@ class GUI(object):
             (680,280), (750,230), (800,150), (860,110), (980,110),
             (1120,130), (920,180),(960,230), (1030,260), (920,280),
             (800,310), (885,330)]
+
+        x,y = self.size
+        xmod = x/1200
+        ymod = y/600
+
+        positions = [(int(p[0]*xmod),int(p[1]*ymod)) for p in positions]
 
         return dict(zip(range(42),positions))
 
