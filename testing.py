@@ -225,21 +225,35 @@ def play_game():
     '''plays a standard game'''
     env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()])
 
-    env.play()
-
+    results = env.play()
+    file = open("testing.txt","w")
+    for r in results:
+        file.write(str(r)+"\n")
+    
 def play_game_with_gui():
     '''plays a standard game'''
     env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()], True)
 
-    env.play()
+    results = env.play()
+    file = open("testing.txt","w")
+    for r in results:
+        file.write(str(r)+"\n")
 
 def cpu_play_game():
     '''Base Agents only play standard game'''
-    Risk.standard_game([BaseAgent() for x in range(6)]).play()
+    env = Risk.standard_game([BaseAgent() for x in range(6)])
+    results = env.play()
+    file = open("testing.txt","w")
+    for r in results:
+        file.write(str(r)+"\n")
 
 def cpu_play_game_with_gui():
     '''Base Agents only play standard game'''
-    Risk.standard_game([BaseAgent() for x in range(6)], True).play()
+    env = Risk.standard_game([BaseAgent() for x in range(6)], True)
+    results = env.play()
+    file = open("testing.txt","w")
+    for r in results:
+        file.write(str(r)+"\n")
 
 
 

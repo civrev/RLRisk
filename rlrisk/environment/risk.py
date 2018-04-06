@@ -56,15 +56,13 @@ class Risk:
                 self.gui.recolor(self.state)
 
             
-            
-
         #begin main game loop
         while not self.winner(debug):
 
+            #record states
             ss = self.get_state(self.state)
-            print(ss)
             self.record.append(ss)
-
+ 
             #whose turn is it?
             turn = self.turn_order[self.turn_count%num_players]
 
@@ -94,6 +92,8 @@ class Risk:
         print("The game is over! Player",
                            self.turn_order[(self.turn_count-1)%num_players],
                            "won the game!")
+
+        return self.record
 
     def recruitment_phase(self, player):
         '''perform recruitment phase'''
@@ -442,6 +442,11 @@ class Risk:
             else:
                 max_attack_troops-=1
 
+        #debugging check
+        if max_attack_troops < 0 or max_defend_troops < 0:
+            print(self.state)
+            raise ValueError("Combat below zero")
+
         territories[attacker][1] = max_attack_troops
         territories[defender][1] = max_defend_troops
 
@@ -660,10 +665,7 @@ class Risk:
 
         for t in range(divy_up):
             choice = self.players[player].after_attack_troops(self.state, frm, to, divy_up-t)
-            if choice==frm:
-                territories[frm][1]+= 1
-                territories[to][1]-= 1
-            else:
+            if choice==to:
                 territories[to][1]+= 1
                 territories[frm][1]-= 1
 
