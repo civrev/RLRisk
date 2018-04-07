@@ -146,8 +146,7 @@ class Risk:
                     territories[attack_to][1]=1
                     territories[attack_to][0]=player
 
-                    self.after_attack_reinforce(player,choice)
-                    
+                    self.after_attack_reinforce(player,choice)                    
                 break
 
             else:
@@ -158,8 +157,15 @@ class Risk:
     def reinforce_phase(self, player):
         '''perform reinforcement phase (Risk turn phase not RL)'''
 
-        pass
-
+        current_player = self.players[player]
+        owned = self.get_owned_territories(player)
+        owned = [t for t in owned if self.state[2][t]>1]
+        frm = current_player.choose_reinforce_from(self.state, owned+[-1])
+        
+        if frm != -1:
+            options = self.map_connected_territories(owned, frm)
+            to = current_player.choose_reinforce_from(self.state, options)
+            self.during_reinforce(player,choice)
         
     def id_names(self):
         """returns helpful 2-way dictionaries for territories"""
@@ -198,7 +204,7 @@ class Risk:
         """
         
         board = {
-            0:[1,3,35],1:[2,3,4],2:[5,1,4,23],3:[0,4,1,6],4:[1,2,3,5,6,7],
+            0:[1,3,35],1:[0,2,3,4],2:[5,1,4,23],3:[0,4,1,6],4:[1,2,3,5,6,7],
             5:[2,4,7],6:[3,4,7,8],7:[5,4,6,8],8:[6,7,9],9:[8,10,11],
             10:[9,12,11,13],11:[10,12,9],12:[10,11],13:[10,14,16,28,29,15],
             14:[13,16,28,29],15:[13,16,17,14,30,18],16:[13,15,17],17:[16,15,18],
@@ -653,7 +659,7 @@ class Risk:
 
             valid.remove(chosen)
 
-    def after_attack_reinforce(self, player, attack):
+    def after_attack_reinforce(self, player, attack, during_attack=True):
         '''this method handles reinforcement after attacking'''
 
         steal_cards, turn_order, territories, cards, trade_ins = self.state
@@ -668,6 +674,32 @@ class Risk:
             if choice==to:
                 territories[to][1]+= 1
                 territories[frm][1]-= 1
+
+    def during_reinforce(self, player, frm, to):
+        '''this method handles reinforcement'''
+
+        steal_cards, turn_order, territories, cards, trade_ins = self.state
+        divy_up = territories[frm][1]-1
+
+        for t in range(divy_up):
+            choice = self.players[player].reinforce(self.state, frm, to, divy_up-t)
+            if choice==to:
+                territories[to][1]+= 1
+                territories[frm][1]-= 1
+
+    def map_connected_territories(self, frm, owned):
+        '''
+        Returns a list of territories that are connected to a
+        specific territory contigously via same ownership
+        '''
+
+        owned = set(owned)
+        connected = list(owned.intersection(set(self.board[frm])))
+
+        for c in connected:
+            owned.intersection(set(self.board[c])))
+
+        return list(connected)
 
     @staticmethod
     def standard_game(players, has_gui=False):

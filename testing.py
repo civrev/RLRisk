@@ -255,6 +255,14 @@ def cpu_play_game_with_gui():
     for r in results:
         file.write(str(r)+"\n")
 
+def map_connections():
+    env = Risk.standard_game([BaseAgent() for x in range(3)], False)
+    owned = env.get_owned_territories(0)
+    print('territories owned by player 1\n',owned)
+    print('territories connected to',owned[-1],env.board[owned[-1]])
+    connected = env.map_connected_territories(owned[-1],owned)
+    print("Returned",connected)
+
 
 
 #****************************************************************
@@ -271,7 +279,8 @@ menu = {
     "10) attack phase test": attack_phase_test,
     "11) Computer plays standard game":cpu_play_game,
     "12) Computer play, with GUI":cpu_play_game_with_gui,
-    "13) User play, with GUI":play_game_with_gui}
+    "13) User play, with GUI":play_game_with_gui,
+    "14) Mapping Connections Test":map_connections}
 
 stop = False
 while not stop:

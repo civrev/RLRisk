@@ -79,7 +79,7 @@ class BaseAgent(object):
         when not randomly dealt
         arguments are passed from environment, a list of valid choices
         returns a single territory ID
-        override this method for subclasses
+        Override this method for subclasses
         '''
 
         chosen = random.choice(valid)
@@ -93,3 +93,24 @@ class BaseAgent(object):
         '''
         
         return random.choice((attack_from, attack_to))
+
+    def choose_reinforce_from(self, state, options):
+        '''
+        During reinforcement phase choose where to reinforce from
+        Override for subclasses
+        '''
+        return random.choice(options)
+
+    def choose_reinforce_to(self, state, options):
+        '''
+        During reinforcement phase choose where to reinforce from
+        Override for subclasses
+        '''
+        return random.choice(options)
+
+    def reinforce(self, state, frm, to, remaining):
+        '''
+        choose where to distribute troops
+        Override for subclasses
+        '''
+        return random.choice((frm, to))

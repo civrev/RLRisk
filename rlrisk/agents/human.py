@@ -66,10 +66,10 @@ class Human(base_agent.BaseAgent):
         print("Valid card sets are:")
         for i,s in enumerate(set_list):
             print(i,"is set",s)
-        chosen = int(input("Chose a set: "))
+        chosen = int(input("Choose a set: "))
 
         while chosen>len(set_list)-1:
-            chosen = int(input("Invalid, chose again: "))
+            chosen = int(input("Invalid, choose again: "))
 
         return set_list[chosen]
 
@@ -84,10 +84,10 @@ class Human(base_agent.BaseAgent):
                 print(i,"is from",s[0],"attack",s[1])
             else:
                 print(i,'for choosing not to attack')
-        chosen = int(input("Chose an attack: "))
+        chosen = int(input("Choose an attack: "))
 
         while chosen>len(attacks)-1:
-            chosen = int(input("Invalid, chose again: "))
+            chosen = int(input("Invalid, choose again: "))
 
         return attacks[chosen]
 
@@ -120,10 +120,10 @@ class Human(base_agent.BaseAgent):
         print("How many troops do you want to risk?:")
         for i,s in enumerate(options):
             print(i,"is risking",s,'troops')
-        chosen = int(input("Chose an amount: "))
+        chosen = int(input("Choose an amount: "))
 
         while chosen>len(options)-1:
-            chosen = int(input("Invalid, chose again: "))
+            chosen = int(input("Invalid, choose again: "))
 
         return options[chosen]
 
@@ -143,6 +143,51 @@ class Human(base_agent.BaseAgent):
             user_input = input("Choose where 1 troop goes: ")
         
         return {'0':attack_from,'1':attack_to}[user_input]
+
+    def choose_reinforce_from(self, state, options):
+        '''
+        During reinforcement phase choose where to reinforce from
+        '''
+        print("Where do you want to reinforce from?:")
+        for i,s in enumerate(options[:-1]):
+            print(i,"is from province",s)
+        print("-1 is for do not reinforce")
+        chosen = int(input("Choose a province: "))
+
+        while chosen>len(options)-1:
+            chosen = int(input("Invalid, chose again: "))
+
+        return owned[chosen]
+
+    def choose_reinforce_to(self, state, options):
+        '''
+        During reinforcement phase choose where to reinforce from
+        '''
+        print("Where do you want to reinforce to?:")
+        for i,s in enumerate(options):
+            print(i,"is to province",s)
+        chosen = int(input("Choose a province: "))
+
+        while chosen>len(options)-1:
+            chosen = int(input("Invalid, chose again: "))
+
+        return owned[chosen]
+
+    def reinforce(self, state, frm, to, remaining):
+        '''
+        choose where to distribute troops during reinforcement phase
+        '''
+        print('You have',remaining,'troops to distribute\n')
+        print('0: for province',frm)
+        print('1: for province',to)
+
+        user_input=''
+
+        while not (user_input=="0" or user_input=="1"):
+
+            user_input = input("Choose where 1 troop goes: ")
+        
+        return {'0':frm,'1':to}[user_input]
 
     def show_cards(self, state):
         '''displays all cards owned by player'''
