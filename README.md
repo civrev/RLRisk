@@ -17,11 +17,6 @@ pip install pygame
 
 ### Installing
 
-The easiest way to install this package is through PyPi
-```
-pip install rlrisk
-```
-
 To install this package, clone the repository to your local computer
 
 ```

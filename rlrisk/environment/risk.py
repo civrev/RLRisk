@@ -5,6 +5,7 @@ See instructions https://www.hasbro.com/common/instruct/risk.pdf
 '''
 
 import random
+import numpy as np
 from rlrisk.environment import config
 from rlrisk.environment import gui
 
@@ -34,7 +35,10 @@ class Risk:
         self.turn_order = turn_order #order in which players take turns, includes # of players
         self.trade_vals = trade_vals #values for card set trade ins
         self.steal_cards = steal_cards #whether or not cards are taken after player defeat
-        self.record = [] #records all states in the game
+        self.troop_record = []
+        self.owner_record = []
+        self.card_record = []
+        self.trade_in_record = []
 
         if has_gui:
             self.gui = gui.GUI()
@@ -61,8 +65,11 @@ class Risk:
         while not self.winner(debug):
 
             #record states
-            ss = self.get_state(self.state)
-            self.record.append(ss)
+            owr,trr,cdr, trade = self.get_numpy_state(self.state)
+            self.owner_record.append(owr)
+            self.troop_record.append(trr)
+            self.card_record.append(cdr)
+            self.trade_in_record.append(trade)
  
             #whose turn is it?
             turn = self.turn_order[self.turn_count%num_players]
@@ -107,7 +114,12 @@ class Risk:
                            "won the game!")
 
         #returns a log of game states at each turn start
-        return self.record
+        #along with the settings of the game
+        return (np.array(self.owner_record),
+                np.array(self.troop_record),
+                np.array(self.card_record),
+                self.state[0],
+                self.state[1])
 
     def recruitment_phase(self, player):
         '''perform recruitment phase'''
@@ -184,8 +196,9 @@ class Risk:
             else:
                 to = current_player.choose_reinforce_to(self.state, options)
             self.during_reinforce(player,frm,to)
-        
-    def id_names(self):
+
+    @staticmethod
+    def id_names():
         """returns helpful 2-way dictionaries for territories"""
         
         names = [
@@ -216,7 +229,8 @@ class Risk:
 
         return (node2name,name2node)
 
-    def gen_board(self):
+    @staticmethod
+    def gen_board():
         """
         Generates the environment of the board
         """
@@ -810,6 +824,48 @@ class Risk:
         state_string = int(state_string)
 
         return state_string
+
+    @staticmethod
+    def get_numpy_state(state):
+        '''
+        Returns the state as a 4 tuple numpy arrays + trade ins
+        Notable missing Steal Cards, and Turn Order normally included in this
+        '''
+        steal_cards, turn_order, territories, cards, trade_ins = state
+
+        owners = np.empty([42,], dtype='int32')
+        troops = np.empty([42,], dtype='int32')
+        card_owners = np.empty([44,], dtype='int32')
+        for num in range(42):
+            owners[num]=territories[num][0]
+            troops[num]=territories[num][1]
+            card_owners[num]=cards[num]
+        card_owners[42]=cards[42]
+        card_owners[43]=cards[43]
+
+        return (owners, troops, card_owners, trade_ins)
+
+    @staticmethod
+    def parse_numpy_array(array_tuple):
+        '''
+        Returns the game state (minus steal cards and turn order)
+        from a numpy array tuple
+        '''
+        owners, troops, card_owners, trade_ins = array_tuple
+
+        territories = {}
+        cards = {}
+
+        for num in range(42):
+            territories[num]=[owners[num]]
+            territories[num].append(troops[num])
+            cards[num]=card_owners[num]
+        cards[42]=card_owners[42]
+        cards[43]=card_owners[43]
+
+        return (territories, cards, trade_ins)
+        
+        
 
     @staticmethod
     def parse_state(state_string, debug=False):

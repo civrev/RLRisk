@@ -5,6 +5,8 @@ import sys #for testing the size of python objects in memory
 import random
 import os
 import pygame
+import numpy as np
+import pandas as pd
 
 from rlrisk.environment import  config, gui
 from rlrisk.environment.risk import Risk
@@ -235,25 +237,21 @@ def play_game_with_gui():
     env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()], True)
 
     results = env.play()
-    file = open("testing.txt","w")
-    for r in results:
-        file.write(str(r)+"\n")
 
 def cpu_play_game():
     '''Base Agents only play standard game'''
     env = Risk.standard_game([BaseAgent() for x in range(6)])
-    results = env.play()
-    file = open("testing.txt","w")
-    for r in results:
-        file.write(str(r)+"\n")
+    p_owners, p_troops, c_owners, trade_ins, steal, turn_order = env.play()
+    owner_df = pd.DataFrame(p_owners)
+    troop_df = pd.DataFrame(p_owners)
+    card_df =  pd.DataFrame(p_owners)
+    print(trade_ins)
 
 def cpu_play_game_with_gui():
     '''Base Agents only play standard game'''
     env = Risk.standard_game([BaseAgent() for x in range(6)], True)
     results = env.play()
-    file = open("testing.txt","w")
-    for r in results:
-        file.write(str(r)+"\n")
+    
 
 def map_connections():
     env = Risk.standard_game([BaseAgent() for x in range(3)], False)
@@ -277,6 +275,18 @@ def map_connections():
         connections += temp
 
     print(connections)
+
+def numpy_state_test():
+    env = Risk.standard_game([BaseAgent() for x in range(6)], False)
+    state_array = env.get_numpy_state(env.state)
+    [print(x) for x in state_array]
+    steal_cards, turn_order = env.state[:2]
+    territories, cards, trade_ins = env.parse_numpy_array(state_array)
+    temp_state = (steal_cards, turn_order, territories, cards, trade_ins)
+    print(env.state==temp_state)
+    for k in env.state[2]:
+        print(env.state[2][k],temp_state[2][k])
+    
     
 
 #****************************************************************
@@ -294,7 +304,8 @@ menu = {
     "11) Computer plays standard game":cpu_play_game,
     "12) Computer play, with GUI":cpu_play_game_with_gui,
     "13) User play, with GUI":play_game_with_gui,
-    "14) Mapping Connections Test":map_connections}
+    "14) Mapping Connections Test":map_connections,
+    '15) Numpy State Parsing Test':numpy_state_test}
 
 stop = False
 while not stop:
