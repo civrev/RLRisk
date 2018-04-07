@@ -25,9 +25,6 @@ class Risk:
             p.set_player(num)
 
         self.has_gui = has_gui #whether or not the gui should be displayed
-
-        if has_gui:
-            self.gui = gui.GUI()
             
         self.players = players #the agents that play the game
         self.turn_count = 0 #initialize turn count at 0
@@ -38,6 +35,10 @@ class Risk:
         self.trade_vals = trade_vals #values for card set trade ins
         self.steal_cards = steal_cards #whether or not cards are taken after player defeat
         self.record = [] #records all states in the game
+
+        if has_gui:
+            self.gui = gui.GUI()
+            #self.gui.add_players(len(players))
 
     def play(self, debug=False):
         '''this is the main game loop'''
@@ -74,13 +75,25 @@ class Risk:
             #perform recruitment
             self.recruitment_phase(turn)
 
+            #update GUI
+            if self.has_gui:
+                self.gui.recolor(self.state)
+
             #perform attack
             self.attack_phase(turn)
+
+            #update GUI
+            if self.has_gui:
+                self.gui.recolor(self.state)
 
             #if attacking won you the game stop
             if not self.winner(debug):
                 #if game is not over perform reinforcement
                 self.reinforce_phase(turn)
+
+            #update GUI
+            if self.has_gui:
+                self.gui.recolor(self.state)
 
             #turn is over, increase turn count
             self.turn_count+=1
@@ -90,9 +103,10 @@ class Risk:
         #exit message
 
         print("The game is over! Player",
-                           self.turn_order[(self.turn_count-1)%num_players],
+                           self.turn_order[(self.turn_count-1)%num_players]+1,
                            "won the game!")
 
+        #returns a log of game states at each turn start
         return self.record
 
     def recruitment_phase(self, player):
@@ -159,13 +173,17 @@ class Risk:
 
         current_player = self.players[player]
         owned = self.get_owned_territories(player)
-        owned = [t for t in owned if self.state[2][t]>1]
+        owned = [t for t in owned if self.state[2][t][1]>1]
         frm = current_player.choose_reinforce_from(self.state, owned+[-1])
         
         if frm != -1:
-            options = self.map_connected_territories(owned, frm)
-            to = current_player.choose_reinforce_from(self.state, options)
-            self.during_reinforce(player,choice)
+            options = self.map_connected_territories(frm, owned)
+            #prevents getting empty sequence
+            if len(options)==0:
+                to = frm
+            else:
+                to = current_player.choose_reinforce_to(self.state, options)
+            self.during_reinforce(player,frm,to)
         
     def id_names(self):
         """returns helpful 2-way dictionaries for territories"""
@@ -694,12 +712,14 @@ class Risk:
         '''
 
         owned = set(owned)
-        connected = list(owned.intersection(set(self.board[frm])))
+        connections = list(owned.intersection(set(self.board[frm])))
+        for c in connections:
+            c_connections = owned.intersection(set(self.board[c]))
+            #weed out visited ones and concatenate them to connections
+            connections += list(c_connections - set(connections))
 
-        for c in connected:
-            owned.intersection(set(self.board[c])))
-
-        return list(connected)
+        return connections
+        
 
     @staticmethod
     def standard_game(players, has_gui=False):

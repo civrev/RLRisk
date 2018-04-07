@@ -75,7 +75,6 @@ class GUI(object):
 
         #get the territories dictionary
         territories = state[2]
-        cards = state[3]
 
         #now color and text cirlces
         for key in territories:
@@ -95,6 +94,8 @@ class GUI(object):
             x,y = self.positions[key]
             self.screen.blit(label,(x-12,y-6))
             self.screen.blit(label_id,(x-6,y-30))
+
+        self.draw_players(state)
 
         pygame.display.flip()
 
@@ -149,3 +150,29 @@ class GUI(object):
         p2c = {0:"red",1:'green',2:'blue',3:'yellow',4:'purple',5:'orange'}
 
         return p2c
+
+
+    def draw_players(self, state):
+        '''draws the players and # cards in their hands'''
+        cards = state[3]
+
+        players_cards={}
+        for num in range(8):
+            players_cards[num]=0
+        for key in cards:
+            players_cards[cards[key]]+=1
+
+        #remove invalid players
+        players_cards.pop(6,None)
+        players_cards.pop(7,None)
+
+        players = sorted(list(players_cards.keys()))
+        y = 550
+        for i,p in enumerate(players):
+            x = 600 + 30*i
+            #color all the circles their respective colors
+            pygame.draw.circle(self.screen, self.colors[self.p2c[p]],
+                               (x,y), 14, 0)
+            label = self.font.render(str(players_cards[p]),1,self.colors['black'])
+            self.screen.blit(label,(x-12,y-6))
+        

@@ -257,13 +257,27 @@ def cpu_play_game_with_gui():
 
 def map_connections():
     env = Risk.standard_game([BaseAgent() for x in range(3)], False)
-    owned = env.get_owned_territories(0)
-    print('territories owned by player 1\n',owned)
-    print('territories connected to',owned[-1],env.board[owned[-1]])
-    connected = env.map_connected_territories(owned[-1],owned)
-    print("Returned",connected)
+    ol =env.get_owned_territories(0)
+    owned = set(ol)
+    g = env.board 
 
+    [print('provID:',k,'\t',v) for k,v in g.items()]
+    print('owned:',ol)
 
+    #begin mapping
+    print('Start at ',ol[0],'connected to',g[ol[0]])
+
+    start = ol[0]
+    connections = list(owned.intersection(set(env.board[start])))
+
+    for c in connections:
+        print(connections)
+        temp = owned.intersection(set(env.board[c]))
+        temp = list(temp - set(connections))
+        connections += temp
+
+    print(connections)
+    
 
 #****************************************************************
 menu = {
