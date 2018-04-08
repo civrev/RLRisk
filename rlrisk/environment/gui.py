@@ -23,13 +23,14 @@ class GUI(object):
         pygame.display.set_caption("RLRisk - Reinforcement Learning Environment")
 
         #load image and make background
-        print(os.getcwd())
         self.background = pygame.image.load(os.path.join(os.getcwd(),'rlrisk/environment/board.bmp'))
         self.size = self.background.get_size()
-        self.positions = self.gen_positions()
         self.screen = pygame.display.set_mode(self.size)
+        self.background = self.background.convert()
+        self.positions = self.gen_positions()
         self.backgroundRect = self.background.get_rect()
-        self.screen.blit(self.background, self.backgroundRect)
+        self.init_draw()
+
 
         #get fonts working
         pygame.font.init()
@@ -37,12 +38,15 @@ class GUI(object):
         self.id_font = pygame.font.Font(self.d_font, 20)
         self.font = pygame.font.Font(self.d_font, 12)
 
-        #paint white circles on territories
+
+    def init_draw(self):
+        '''Draws the initial screen'''
+        self.size = self.background.get_size() #duplicate on purpose, for subclasses
+        self.screen = pygame.display.set_mode(self.size)
+        self.screen.blit(self.background, self.backgroundRect)
         [pygame.draw.circle(self.screen,self.colors["white"],(x,y),14, 0) for x,y in self.positions.values()]
-
         pygame.display.flip()
-
-            
+        
     def loop_event(self, target_event_type):
         '''
         Loops through all the pygame events,
@@ -70,6 +74,9 @@ class GUI(object):
         colors a circle representing a territory from a environment state
         '''
 
+        #not interested in events
+        pygame.event.clear()
+
         #reload original background
         self.screen.blit(self.background, self.backgroundRect)
 
@@ -77,7 +84,7 @@ class GUI(object):
         territories = state[2]
 
         #now color and text cirlces
-        for key in territories:
+        for key in self.positions:
             #get owner and troop values
             t_owner,troops = territories[key]
 
@@ -128,7 +135,8 @@ class GUI(object):
 
         return dict(zip(range(42),positions))
 
-    def gen_colors(self):
+    @staticmethod
+    def gen_colors():
         '''returns a dictionary of RGB colors to be used in pygame'''
 
         colors = {
@@ -144,10 +152,11 @@ class GUI(object):
 
         return colors
 
-    def player_colors(self):
+    @staticmethod
+    def player_colors():
         '''assigned players colors in pygame'''
 
-        p2c = {0:"red",1:'green',2:'blue',3:'yellow',4:'purple',5:'orange'}
+        p2c = {-1:'white',0:"red",1:'green',2:'blue',3:'yellow',4:'purple',5:'orange'}
 
         return p2c
 
@@ -175,4 +184,5 @@ class GUI(object):
                                (x,y), 14, 0)
             label = self.font.render(str(players_cards[p]),1,self.colors['black'])
             self.screen.blit(label,(x-12,y-6))
+
         

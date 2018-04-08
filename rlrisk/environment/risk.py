@@ -118,6 +118,7 @@ class Risk:
         return (np.array(self.owner_record),
                 np.array(self.troop_record),
                 np.array(self.card_record),
+                np.array(self.trade_in_record),
                 self.state[0],
                 self.state[1])
 
@@ -134,14 +135,11 @@ class Risk:
         set_list,card_count = self.get_sets(player)
 
         #if agent does, prompt them for whether or not they want to trade in a set
-        while len(set_list)!=0:
+        if len(set_list)!=0:
             recruited = self.trade_in(player, set_list, card_count)
             if recruited!=0:
-                #increase number of trade ins
-                self.state[-1]+=1
-
                 #place newly recruited troops
-                self.state = current_player.place_troops(recruited)
+                self.place_troops(player, recruited)
             else:
                 set_list=[]
 
@@ -252,12 +250,12 @@ class Risk:
         #Continent name as key, with a list containing
         #continent value as 1st element, and then nodes
         continents = {
-            "Europe":[5,23,24,25,26,27,28,29],
+            "Europe":[23,24,25,26,27,28,29],
             "N_America":[5,0,1,2,3,4,5,6,7,8],
-            "Africa":[3,14,18,13,15,16,17],
-            "Australia":[2,19,20,21,22],
-            "Asia":[7,30,31,32,33,34,35,36,37,38,39,40,41],
-            "S_America":[2,9,12,10,11]
+            "Africa":[14,18,13,15,16,17],
+            "Australia":[19,20,21,22],
+            "Asia":[30,31,32,33,34,35,36,37,38,39,40,41],
+            "S_America":[9,12,10,11]
             }
 
 
@@ -282,7 +280,8 @@ class Risk:
         '''
         return {2:40,3:35,4:30,5:25,6:20}[len(self.players)]
 
-    def gen_init_state(self, steal_cards, turn_order, debug=False):
+    @staticmethod
+    def gen_init_state(steal_cards, turn_order, debug=False):
         '''
         generates the initial state of the game
         steal_cards: whether or not players aquire the cards of their opponents upon defeat
@@ -298,13 +297,14 @@ class Risk:
         
         #initializes the initial state of the game
         #the game state is all the nodes, node owner, and army size per node
+        x = [-1,0]
         territories = {
-            0:[0,0],1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0],6:[0,0],7:[0,0],8:[0,0],
-            9:[0,0],10:[0,0],11:[0,0],12:[0,0],13:[0,0],14:[0,0],15:[0,0],16:[0,0],
-            17:[0,0],18:[0,0],19:[0,0],20:[0,0],21:[0,0],22:[0,0],23:[0,0],24:[0,0],
-            25:[0,0],26:[0,0],27:[0,0],28:[0,0],29:[0,0],30:[0,0],31:[0,0],32:[0,0],
-            33:[0,0],34:[0,0],35:[0,0],36:[0,0],37:[0,0],38:[0,0],39:[0,0],40:[0,0],
-            41:[0,0]
+            0:list(x),1:list(x),2:list(x),3:list(x),4:list(x),5:list(x),6:list(x),7:list(x),8:list(x),
+            9:list(x),10:list(x),11:list(x),12:list(x),13:list(x),14:list(x),15:list(x),16:list(x),
+            17:list(x),18:list(x),19:list(x),20:list(x),21:list(x),22:list(x),23:list(x),24:list(x),
+            25:list(x),26:list(x),27:list(x),28:list(x),29:list(x),30:list(x),31:list(x),32:list(x),
+            33:list(x),34:list(x),35:list(x),36:list(x),37:list(x),38:list(x),39:list(x),40:list(x),
+            41:list(x)
             }
 
         #initializes the cards pre-start of game with their owner
@@ -636,11 +636,16 @@ class Risk:
         else:
             must_trade=False
 
+
         current_player = self.players[player]
 
         chosen = current_player.choose_trade_in(self.state, self.trade_vals, set_list, must_trade)
-
         if chosen!=0:
+
+            trade_ins+=1
+
+            #repack state
+            self.state = (steal_cards, turn_order, territories, cards, trade_ins)
 
             #set all traded in cards to 7, the 'unowned'
             for c in chosen:
@@ -650,10 +655,8 @@ class Risk:
             #if number of trade ins exceeds length of values
             #just award the last one
             if len(self.trade_vals)<trade_ins:
-                trade_ins+=1
                 return self.trade_vals[-1]
             else:
-                trade_ins+=1
                 return self.trade_vals[trade_ins-1]
             
         #if agent decides not to trade in a set, then no troops will be awarded
@@ -678,18 +681,24 @@ class Risk:
         #players are prompted by turn order for a territory selection
 
         steal_cards, turn_order, territories, cards, trade_ins = self.state
+
+        turn_count=0
         
         valid = list(range(42))
         for index in range(42):
 
-            turn = self.turn_order[self.turn_count%len(self.players)]
+            turn = turn_order[turn_count%len(self.players)]
             
             current_player = self.players[turn]
-            chosen = current_player.pick_initial_territories(valid)
+            chosen = current_player.choose_initial_territories(valid, self.state)
 
             territories[chosen]=[turn,1]
 
             valid.remove(chosen)
+            turn_count+=1
+
+            #repack state
+            self.state = (steal_cards, turn_order, territories, cards, trade_ins)
 
     def after_attack_reinforce(self, player, attack, during_attack=True):
         '''this method handles reinforcement after attacking'''

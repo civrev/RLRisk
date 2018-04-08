@@ -30,7 +30,7 @@ class Human(base_agent.BaseAgent):
             chosen = int(input("That was invalid. Choose again: "))
 
 
-        return valid[chosen]
+        return chosen
 
     def choose_placement(self, valid, state, troops):
         '''

@@ -12,6 +12,8 @@ from rlrisk.environment import  config, gui
 from rlrisk.environment.risk import Risk
 from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
+from rlrisk.minigames.pick_start_positions import PickStartGame
+from rlrisk.minigames.southern_warfare import SouthernWarfare
 
 
 def node_test():
@@ -243,9 +245,9 @@ def cpu_play_game():
     env = Risk.standard_game([BaseAgent() for x in range(6)])
     p_owners, p_troops, c_owners, trade_ins, steal, turn_order = env.play()
     owner_df = pd.DataFrame(p_owners)
-    troop_df = pd.DataFrame(p_owners)
-    card_df =  pd.DataFrame(p_owners)
-    print(trade_ins)
+    troop_df = pd.DataFrame(p_troops)
+    card_df =  pd.DataFrame(c_owners)
+    trade_ins_df = pd.DataFrame(trade_ins)
 
 def cpu_play_game_with_gui():
     '''Base Agents only play standard game'''
@@ -286,7 +288,22 @@ def numpy_state_test():
     print(env.state==temp_state)
     for k in env.state[2]:
         print(env.state[2][k],temp_state[2][k])
-    
+
+def pick_start_minigame():
+    ui = input("Human or Random? h/r: ")
+    while ui not in ['h','r']:
+        ui = input("Human or Random? h/r: ")
+    if ui == 'h':
+        agent = Human()
+    else:
+        agent = BaseAgent()
+
+    for x in range(10):
+        env = PickStartGame([agent])
+        env.play()
+
+def southern_minigame():
+    env = SouthernWarfare([BaseAgent() for x in range(2)]+[Human()])
     
 
 #****************************************************************
@@ -305,7 +322,9 @@ menu = {
     "12) Computer play, with GUI":cpu_play_game_with_gui,
     "13) User play, with GUI":play_game_with_gui,
     "14) Mapping Connections Test":map_connections,
-    '15) Numpy State Parsing Test':numpy_state_test}
+    '15) Numpy State Parsing Test':numpy_state_test,
+    '16) Pick Start Positions Minigame Test':pick_start_minigame,
+    '17) Southern Warfare Minigame Test':southern_minigame}
 
 stop = False
 while not stop:
