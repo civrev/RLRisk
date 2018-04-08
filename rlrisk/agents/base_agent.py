@@ -58,6 +58,7 @@ class BaseAgent(object):
         Override for subclasses
         '''
 
+
         #a markov model showed that it's always best to Risk
         #a the maximum you can, so that base agent will
         #just do that

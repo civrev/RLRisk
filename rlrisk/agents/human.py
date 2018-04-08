@@ -154,10 +154,10 @@ class Human(base_agent.BaseAgent):
         print("-1 is for do not reinforce")
         chosen = int(input("Choose a province: "))
 
-        while chosen>len(options)-1:
+        while chosen>len(options)-1 or chosen<-2:
             chosen = int(input("Invalid, chose again: "))
 
-        return owned[chosen]
+        return options[chosen]
 
     def choose_reinforce_to(self, state, options):
         '''
@@ -171,7 +171,7 @@ class Human(base_agent.BaseAgent):
         while chosen>len(options)-1:
             chosen = int(input("Invalid, chose again: "))
 
-        return owned[chosen]
+        return options[chosen]
 
     def reinforce(self, state, frm, to, remaining):
         '''
@@ -198,7 +198,7 @@ class Human(base_agent.BaseAgent):
         #init()
         c_owned = [c for c in cards if cards[c]==self.player]
 
-        print()
+        print('debug',c_owned)
         [print('you own card', cards[c]) for c in c_owned]
 
         if len(c_owned)==0:

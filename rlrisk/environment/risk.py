@@ -35,6 +35,7 @@ class Risk:
         self.turn_order = turn_order #order in which players take turns, includes # of players
         self.trade_vals = trade_vals #values for card set trade ins
         self.steal_cards = steal_cards #whether or not cards are taken after player defeat
+        self.con_rewards = self.continent_rewards() #rewards for owning continents
         self.troop_record = []
         self.owner_record = []
         self.card_record = []
@@ -161,17 +162,23 @@ class Risk:
 
             #result 1 if attacker wins, -1 if defender wins
             #0 if no result yet
-            if result!=0:
-                
-                if result==1:
-                    self.reward_card(player) #give player a card
-                    attack_from,attack_to = choice
-                    territories[attack_from][1]-=1
-                    territories[attack_to][1]=1
-                    territories[attack_to][0]=player
-
-                    self.after_attack_reinforce(player,choice)                    
+            if result==-1:
                 break
+            elif result==1:
+                self.reward_card(player) #give player a card
+                attack_from,attack_to = choice
+                territories[attack_from][1]-=1
+                territories[attack_to][1]=1
+                territories[attack_to][0]=player
+
+                self.after_attack_reinforce(player,choice)
+                #if player has enough troops, offer to extend the attack
+                territories = self.state[2]
+                if territories[attack_to][1]>1:
+                    targets = self.get_targets(player,frm=attack_to)
+                    choice = current_player.choose_attack(self.state, targets)
+                else:
+                    choice=False
 
             else:
                 current_player.continue_attack(self.state, choice)
@@ -226,6 +233,11 @@ class Risk:
             name2node[name]=num
 
         return (node2name,name2node)
+
+    @staticmethod
+    def continent_rewards():
+        '''Returns the troop rewards for owning continents'''
+        return {"Europe":5,"N_America":5,"Africa":3,"Australia":2,"Asia":7,"S_America":2}
 
     @staticmethod
     def gen_board():
@@ -410,7 +422,7 @@ class Risk:
 
         return [t for t in territories if territories[t][0]==player]
 
-    def get_targets(self, player):
+    def get_targets(self, player, frm=-1):
         '''
         returns a list of tuples with the first value being
         a valid territory to attack from and the second a
@@ -429,7 +441,11 @@ class Risk:
         owned = self.get_owned_territories(player)
 
         #get all owned territories with more than 1 troop
-        valid = [t for t in owned if territories[t][1]>1]
+        if frm==-1:
+            valid = [t for t in owned if territories[t][1]>1]
+        else:
+            #continuing attack onto other provinces
+            valid = []
 
         #generate a list of tuples representing all valid attack options
         attacks = []
@@ -525,14 +541,14 @@ class Risk:
         #calculate for continents
         for continent in self.continents:
             c_owned=True
-            for territory in self.continents[continent][1:]:
+            for territory in self.continents[continent]:
                 if territory not in t_owned:
                     c_owned=False
 
             #if you own the continent, then get the troops
             #allocated for that continent (stored in position 0)
             if c_owned:
-                recruit += self.continents[continent][0]
+                recruit += self.con_rewards[continent]
 
         return recruit
 
