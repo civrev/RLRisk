@@ -114,6 +114,10 @@ class Risk:
                            self.turn_order[(self.turn_count-1)%num_players]+1,
                            "won the game!")
 
+        if self.has_gui:
+            #close gui
+            self.gui.quit_game()
+
         #returns a log of game states at each turn start
         #along with the settings of the game
         return (np.array(self.owner_record),
