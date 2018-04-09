@@ -64,8 +64,10 @@ class Human(base_agent.BaseAgent):
         '''
 
         print("Valid card sets are:")
-        for i,s in enumerate(set_list):
+        for i,s in enumerate(set_list[:-1]):
             print(i,"is set",s)
+        if 0 in set_list:
+            print('-1 for no trade')
         chosen = int(input("Choose a set: "))
 
         while chosen>len(set_list)-1:

@@ -28,7 +28,6 @@ class BaseAgent(object):
         this is where the agent chooses what trade in combo to make, if any
         Override this method for subclasses
         '''
-
         return random.choice(set_list)
 
     def choose_attack(self, state, attacks):

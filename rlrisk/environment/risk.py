@@ -159,6 +159,9 @@ class Risk:
 
         steal_cards, turn_order, territories, cards, trade_ins = self.state
 
+        #Notes whether or not they should recieve a card if they win
+        first=True
+        
         while choice!=False:
 
             #performs a single iteration of combat
@@ -169,7 +172,8 @@ class Risk:
             if result==-1:
                 break
             elif result==1:
-                self.reward_card(player) #give player a card
+                if first:
+                    self.reward_card(player) #give player a card
                 attack_from,attack_to = choice
                 territories[attack_from][1]-=1
                 territories[attack_to][1]=1
@@ -181,6 +185,7 @@ class Risk:
                 if territories[attack_to][1]>1:
                     targets = self.get_targets(player,frm=attack_to)
                     choice = current_player.choose_attack(self.state, targets)
+                    first=False
                 else:
                     choice=False
 
@@ -194,8 +199,8 @@ class Risk:
 
         current_player = self.players[player]
         owned = self.get_owned_territories(player)
-        owned = [t for t in owned if self.state[2][t][1]>1]
-        frm = current_player.choose_reinforce_from(self.state, owned+[-1])
+        valid = [t for t in owned if self.state[2][t][1]>1]
+        frm = current_player.choose_reinforce_from(self.state, valid+[-1])
         
         if frm != -1:
             options = self.map_connected_territories(frm, owned)
@@ -449,7 +454,7 @@ class Risk:
             valid = [t for t in owned if territories[t][1]>1]
         else:
             #continuing attack onto other provinces
-            valid = []
+            valid = [frm]
 
         #generate a list of tuples representing all valid attack options
         attacks = []
@@ -498,6 +503,7 @@ class Risk:
             if a>d:
                 max_defend_troops-=1
             else:
+                attacking-=1
                 max_attack_troops-=1
 
         #debugging check
@@ -509,6 +515,10 @@ class Risk:
         territories[defender][1] = max_defend_troops
 
         if max_defend_troops == 0:
+            territories[attacker][1]-=attacking
+            territories[defender][1]=attacking
+            territories[defender][0]=attacker_player
+            self.state = (steal_cards, turn_order, territories, cards, trade_ins)
             return 1
         
         if max_attack_troops == 1:
@@ -655,11 +665,15 @@ class Risk:
             must_trade=True
         else:
             must_trade=False
+            set_list.append(0)
 
 
         current_player = self.players[player]
-
+        
         chosen = current_player.choose_trade_in(self.state, self.trade_vals, set_list, must_trade)
+
+        
+
         if chosen!=0:
 
             trade_ins+=1
@@ -756,10 +770,11 @@ class Risk:
 
         owned = set(owned)
         connections = list(owned.intersection(set(self.board[frm])))
-        for c in connections:
-            c_connections = owned.intersection(set(self.board[c]))
-            #weed out visited ones and concatenate them to connections
-            connections += list(c_connections - set(connections))
+        for x in range(42):
+            if x < len(connections):
+                c_connections = owned.intersection(set(self.board[connections[x]]))
+                #weed out visited ones and concatenate them to connections
+                connections += list(c_connections - set(connections))
 
         return connections
         

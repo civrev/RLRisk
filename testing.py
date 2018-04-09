@@ -12,6 +12,7 @@ from rlrisk.environment import  config, gui
 from rlrisk.environment.risk import Risk
 from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
+from rlrisk.agents.agg_agent import AggAgent
 from rlrisk.minigames.pick_start_positions import PickStartGame
 from rlrisk.minigames.southern_warfare import SouthernWarfare
 
@@ -266,6 +267,9 @@ def map_connections():
 
     #begin mapping
     print('Start at ',ol[0],'connected to',g[ol[0]])
+    for p in g[ol[0]]:
+        print(p,'is connected to',g[p])
+        [print('\t',x,g[x]) for x in g[p]]
 
     start = ol[0]
     connections = list(owned.intersection(set(env.board[start])))
@@ -277,6 +281,9 @@ def map_connections():
         connections += temp
 
     print(connections)
+
+    print('compare',env.map_connected_territories(start,ol))
+    
 
 def numpy_state_test():
     env = Risk.standard_game([BaseAgent() for x in range(6)], False)
@@ -304,6 +311,9 @@ def pick_start_minigame():
 
 def southern_minigame():
     env = SouthernWarfare([BaseAgent() for x in range(2)]+[Human()])
+
+def agg_test():
+    Risk.standard_game([AggAgent() for x in range(6)],True).play()
     
 
 #****************************************************************
@@ -324,11 +334,13 @@ menu = {
     "14) Mapping Connections Test":map_connections,
     '15) Numpy State Parsing Test':numpy_state_test,
     '16) Pick Start Positions Minigame Test':pick_start_minigame,
-    '17) Southern Warfare Minigame Test':southern_minigame}
+    '17) Southern Warfare Minigame Test':southern_minigame,
+    '18) Aggressive Agent Test':agg_test}
 
 stop = False
 while not stop:
     [print(x) for x in sorted(list(menu.keys()))]
+    print('-1 for quit')
     user=0
     try:
         user=int(input("Make a selection: "))

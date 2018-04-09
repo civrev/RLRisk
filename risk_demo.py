@@ -5,6 +5,7 @@ is fully working after installation
 
 from rlrisk.environment import risk, gui
 from rlrisk.agents.base_agent import BaseAgent
+from rlrisk.agents.agg_agent import AggAgent
 from rlrisk.agents.human import Human
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ import matplotlib.pyplot as plt
 # generate 6 players, one of them human
 # players must be initialized with a player #
 # ie player 0->5 for 6 players
-players = [BaseAgent() for x in range(6)]
+players = [AggAgent() for x in range(6)]
 
 # create a game of Risk using standard ruleset
 # must include a list of players
