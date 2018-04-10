@@ -14,103 +14,45 @@ class BaseAgent(object):
     def __init__(self):
         pass
 
-    def set_player(self, player):
-        '''tell's the agent what player it is'''
+    def pregame_setup(self, player, trade_vals, turn_order, steal_cards):
+        '''
+        Static information for the agent's reference that
+        are instatiated at the start of every game
+        '''
+        #what player this agent is
         self.player = player
+        #the sequence from which card set trade in rewards are given
+        self.trade_vals = trade_vals
+        #the order which players take turns
+        self.turn_order = turn_order
+        #whether or not you get the cards of another player upon their defeat
+        self.steal_cards = steal_cards
 
-    #--------------------------------------------------
-    # Agent specific Methods
-    #--------------------------------------------------
+    def take_action(self, state, action_code, options):
+        '''The environment provides the state, and requests an action from the agent'''
 
+        #example of what is inside the state tuple
+        territories, cards, trade_ins = state
 
-    def choose_trade_in(self, state, trade_vals, set_list, must_trade):
         '''
-        this is where the agent chooses what trade in combo to make, if any
-        Override this method for subclasses
+        Action Codes represent what part of the game is requesting an action
+        0 = place_troops_during_recruitment
+        1 = choose_attack
+        2 = press_the attack_during_combat
+        3 = choose_size_of_troops_to_risk_during_attack
+        4 = reinforce_from_province
+        5 = reinforce_to_province
+        6 = distrubte_troops_during_reinforcement
+        7 = distrubte_troops_into_conquered_territory_after_attack
+        8 = choose_which_arrangement_of_cards_to_trade_in
         '''
-        return random.choice(set_list)
+        #always risk maximum troops during attack
+        if action_code == 3:
+            return options[-1]
 
-    def choose_attack(self, state, attacks):
-        '''
-        asks the agent to choose from a list of valid attacks
-        Override for subclasses
-        '''
-
-        return random.choice(attacks)
-
-    def continue_attack(self, state, current_attack):
-        '''
-        returns whether or not (True/False) to continue the attack
-        given the current attack and state
-        Override for subclasses
-        '''
-
-        #90% of the time just continue attack
-        if random.random() > 0.9:
+        #never retreat        
+        if action_code == 2:
             return True
-        
-        return False
 
-    def choose_attack_size(self, state, options):
-        '''
-        chooses how many troops to sent to attack
-        Override for subclasses
-        '''
-
-
-        #a markov model showed that it's always best to Risk
-        #a the maximum you can, so that base agent will
-        #just do that
-        return options[-1]
-
-    def choose_placement(self, valid, state, troops):
-        '''
-        returns a single territory ID from a list of valid ids
-        Override this method for subclass decisions on troop placement
-        '''
-        
-        chosen = random.choice(valid)
-
-        return chosen
-
-    def choose_initial_territories(self, valid, state):
-        '''
-        for choosing territories at beginning of game
-        when not randomly dealt
-        arguments are passed from environment, a list of valid choices
-        returns a single territory ID
-        Override this method for subclasses
-        '''
-
-        chosen = random.choice(valid)
-
-        return chosen
-
-    def after_attack_troops(self, state, attack_from, attack_to, remaining):
-        '''
-        for moving troops after a successful attack
-        Override for subclasses
-        '''
-        
-        return random.choice((attack_from, attack_to))
-
-    def choose_reinforce_from(self, state, options):
-        '''
-        During reinforcement phase choose where to reinforce from
-        Override for subclasses
-        '''
+        #typical random action
         return random.choice(options)
-
-    def choose_reinforce_to(self, state, options):
-        '''
-        During reinforcement phase choose where to reinforce from
-        Override for subclasses
-        '''
-        return random.choice(options)
-
-    def reinforce(self, state, frm, to, remaining):
-        '''
-        choose where to distribute troops
-        Override for subclasses
-        '''
-        return random.choice((frm, to))

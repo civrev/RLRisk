@@ -12,7 +12,6 @@ from rlrisk.environment import  config, gui
 from rlrisk.environment.risk import Risk
 from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
-from rlrisk.agents.agg_agent import AggAgent
 from rlrisk.minigames.pick_start_positions import PickStartGame
 from rlrisk.minigames.southern_warfare import SouthernWarfare
 
@@ -85,14 +84,14 @@ def attack_phase_test():
     env = Risk.standard_game(players)
 
     #unpack initial state
-    steal_cards, turn_order, territories, cards, trade_ins = env.state
+    territories, cards, trade_ins = env.state
 
     #change troops to random values
     for key in territories:
         territories[key][1]=random.randrange(1,50)
 
     #repack changed state
-    env.state = (steal_cards, turn_order, territories, cards, trade_ins)
+    env.state = (territories, cards, trade_ins)
 
     #get a player
     p = players[0]
@@ -105,48 +104,6 @@ def attack_phase_test():
     print("Valid Attacks ------------------------------")
     [print(x) for x in env.get_targets(0)]
 
-    
-
-def parse_test():
-    '''
-    test the ability to parse state representations
-    it also test the amount of memory it takes to
-    store the state representation
-    '''
-    
-    test = "Hello World!"
-    print(test,sys.getsizeof(test), "bytes")
-
-    env = Risk([BaseAgent() for x in range(6)],
-                    [0,1,2,3,4,5],[4,6,8,10,15,20], True)
-    steal_cards, turn_order, territories, cards, trade_ins = env.state
-
-    #sets troops to a random number 1-2,000,000 for each territory
-    for key in territories:
-        territories[key][1]=random.randrange(1,2000000)
-
-    state = (steal_cards, turn_order, territories, cards, trade_ins) #init state
-    st_string = Risk.get_state(state) #turned into string
-    state_2 = Risk.parse_state(st_string, debug=True)
-
-    
-    steal_cards2, turn_order2, territories2, cards2, trade_ins2 = state_2
-    print(turn_order,turn_order2)
-    for t in territories:
-        print(territories[t],territories2[t])
-    
-    st_string_2 = Risk.get_state(state_2)
-
-    print("State String  1 Size:",sys.getsizeof(st_string),st_string)
-
-    print("State String 2 Size:",sys.getsizeof(st_string_2),st_string_2)
-
-    print("Test passed?",st_string==st_string_2)
-
-
-    #this compares state->rep rep->state lossless conversion
-    return st_string==st_string_2
-
 
 def player_test():
     '''
@@ -156,7 +113,7 @@ def player_test():
     #get some initial environment
     env = Risk([BaseAgent() for x in range(6)],
                     [0,1,2,3,4,5],[4,6,8,10,15,20], True)
-    steal_cards, turn_order, territories, cards, trade_ins = env.state
+    territories, cards, trade_ins = env.state
 
     #create agent as player 1
     agent_demo = BaseAgent()
@@ -178,9 +135,9 @@ def player_test():
         temp_cards = dict(cards)
         for c in data:
             temp_cards[c]=0 #let's say our agent is player 0
-        env.state = steal_cards, turn_order, territories, temp_cards, trade_ins
+        env.state = territories, temp_cards, trade_ins
         sets, c_owned  = env.get_sets(0, debug=True)
-        env.state = steal_cards, turn_order, territories, cards, trade_ins
+        env.state = territories, cards, trade_ins
 
         print("Sets detected:",sets)
         print("Sets supposed:",ans)
@@ -237,7 +194,7 @@ def play_game():
     
 def play_game_with_gui():
     '''plays a standard game'''
-    env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()], True)
+    env = Risk.standard_game([BaseAgent() for x in range(5)]+[Human()], True, True)
 
     results = env.play()
 
@@ -289,9 +246,9 @@ def numpy_state_test():
     env = Risk.standard_game([BaseAgent() for x in range(6)], False)
     state_array = env.get_numpy_state(env.state)
     [print(x) for x in state_array]
-    steal_cards, turn_order = env.state[:2]
+    steal_cards, turn_order = env.steal_cards, env.turn_order
     territories, cards, trade_ins = env.parse_numpy_array(state_array)
-    temp_state = (steal_cards, turn_order, territories, cards, trade_ins)
+    temp_state = (territories, cards, trade_ins)
     print(env.state==temp_state)
     for k in env.state[2]:
         print(env.state[2][k],temp_state[2][k])
@@ -312,30 +269,30 @@ def pick_start_minigame():
 def southern_minigame():
     env = SouthernWarfare([BaseAgent() for x in range(2)]+[Human()])
 
-def agg_test():
-    Risk.standard_game([AggAgent() for x in range(6)],True).play()
+def multi_game_test():
+    for x in range(20):
+        Risk.standard_game([BaseAgent() for x in range(6)],False).play()
     
 
 #****************************************************************
 menu = {
     "01) node test":node_test,
-    "02) parse test":parse_test,
-    "03) agent test":player_test,
-    "04) game config test":config_test,
-    "05) territory assignment test":assign_territories_test,
-    "06) standard game test":standard_game_test,
-    "07) play standard game":play_game,
-    "08) event test":event_test,
-    "09) gui test":gui_test,
-    "10) attack phase test": attack_phase_test,
-    "11) Computer plays standard game":cpu_play_game,
-    "12) Computer play, with GUI":cpu_play_game_with_gui,
-    "13) User play, with GUI":play_game_with_gui,
-    "14) Mapping Connections Test":map_connections,
-    '15) Numpy State Parsing Test':numpy_state_test,
-    '16) Pick Start Positions Minigame Test':pick_start_minigame,
-    '17) Southern Warfare Minigame Test':southern_minigame,
-    '18) Aggressive Agent Test':agg_test}
+    "02) agent test":player_test,
+    "03) game config test":config_test,
+    "04) territory assignment test":assign_territories_test,
+    "05) standard game test":standard_game_test,
+    "06) play standard game":play_game,
+    "07) event test":event_test,
+    "08) gui test":gui_test,
+    "09) attack phase test": attack_phase_test,
+    "10) Computer plays standard game":cpu_play_game,
+    "11) Computer play, with GUI":cpu_play_game_with_gui,
+    "12) User play, with GUI":play_game_with_gui,
+    "13) Mapping Connections Test":map_connections,
+    '14) Numpy State Parsing Test':numpy_state_test,
+    '15) Pick Start Positions Minigame Test':pick_start_minigame,
+    '16) Southern Warfare Minigame Test':southern_minigame,
+    '17) Play 20 games':multi_game_test}
 
 stop = False
 while not stop:

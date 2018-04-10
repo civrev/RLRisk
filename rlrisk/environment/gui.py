@@ -81,7 +81,7 @@ class GUI(object):
         self.screen.blit(self.background, self.backgroundRect)
 
         #get the territories dictionary
-        territories = state[2]
+        territories = state[0]
 
         #now color and text cirlces
         for key in self.positions:
@@ -163,7 +163,7 @@ class GUI(object):
 
     def draw_players(self, state):
         '''draws the players and # cards in their hands'''
-        cards = state[3]
+        cards = state[1]
 
         players_cards={}
         for num in range(8):
