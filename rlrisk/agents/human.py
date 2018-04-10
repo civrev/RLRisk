@@ -10,16 +10,16 @@ class Human(BaseAgent):
     '''Allows for human users to play Risk RL'''
 
     def __init__(self):
-        prompts=['Place 1 Troop during Recruitment\nOptions are territory IDs',
-                 'Choose an attack to perform (From, To)\nFalse is for no attack',
-                 'Continue Attack?',
-                 'How many troops do you want to risk in battle?',
-                 'Reinforce from what territory?',
-                 'Send reinforcements to what territory?',
-                 'Where should 1 troop go during reinforcement?',
-                 'Where should 1 troop move after the attack?',
-                 'Which arrangement of cards would you like to trade in?']
-        self.acodes=dict(zip(range(9), prompts))
+        self.acodes={0:'Place 1 Troop during Recruitment\nOptions are territory IDs',
+                     1:'Choose an attack to perform (From, To)\nFalse is for no attack',
+                     2:'Continue Attack?',
+                     3:'How many troops do you want to risk in battle?',
+                     4:'Reinforce from what territory?',
+                     5:'Send reinforcements to what territory?',
+                     6:'Where should 1 troop go during reinforcement?',
+                     7:'Where should 1 troop move after the attack?',
+                     8:'Which arrangement of cards would you like to trade in?',
+                     9:'Choose Territories at game start'}
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''

@@ -768,7 +768,7 @@ class Risk:
             turn = turn_order[turn_count%len(self.players)]
             
             current_player = self.players[turn]
-            chosen = current_player.choose_initial_territories(valid, self.state)
+            chosen = current_player.take_action(self.state, 9, valid)
 
             territories[chosen]=[turn,1]
 

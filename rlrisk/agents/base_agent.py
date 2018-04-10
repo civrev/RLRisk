@@ -45,6 +45,7 @@ class BaseAgent(object):
         6 = distrubte_troops_during_reinforcement
         7 = distrubte_troops_into_conquered_territory_after_attack
         8 = choose_which_arrangement_of_cards_to_trade_in
+        9 = choose_initial_territory
         '''
         #always risk maximum troops during attack
         if action_code == 3:

@@ -142,7 +142,7 @@ class GUI(object):
         colors = {
             "red":(255,0,0),
             "green":(0,255,0),
-            "blue":(0,0,255),
+            "cyan":(0,255,255),
             "yellow":(255,255,0),
             "purple":(255,0,255),
             "orange":(255,128,0),
@@ -156,7 +156,7 @@ class GUI(object):
     def player_colors():
         '''assigned players colors in pygame'''
 
-        p2c = {-1:'white',0:"red",1:'green',2:'blue',3:'yellow',4:'purple',5:'orange'}
+        p2c = {-1:'white',0:"red",1:'green',2:'cyan',3:'yellow',4:'purple',5:'orange'}
 
         return p2c
 

@@ -19,6 +19,8 @@ def plot_results(results):
 
     p2c = gui.GUI.player_colors()
     roll = 20
+
+    #plot number of owned territores by turn
     owner_df = pd.DataFrame(prov_r)
     owner_stats = [owner_df[owner_df==num].count(1).rolling(roll).mean() for num in range(len(players))]
     fig, ax = plt.subplots()
@@ -42,9 +44,20 @@ def plot_results(results):
     plt.title('Total Troop Count By Player')
     plt.show()
 
+    #plot the ratio of troops to territories
+    fig, ax = plt.subplots()
+    for plr_num, trp_series in enumerate(troop_stats, 1):
+        combo_series = trp_series / owner_stats[plr_num-1]
+        ax = combo_series.plot(ax=ax, kind='line', x='x', y='y', c=p2c[plr_num-1],label="Player "+str(plr_num))
+    plt.legend(loc='best')
+    plt.xlabel('Turn')
+    plt.ylabel('Average Troops / Owned Territory')
+    plt.title('Troops/Territories Ratio By Player')
+    plt.show()
+
 #How to run a game using the normal rules
 players = [BaseAgent() for x in range(6)]
-env = risk.Risk.standard_game(players, has_gui=True)
+env = risk.Risk.standard_game(players, has_gui=False)
 results = env.play()
 plot_results(results)
 
