@@ -259,11 +259,15 @@ def pick_start_minigame():
         ui = input("Human or Random? h/r: ")
     if ui == 'h':
         agent = Human()
+        times=1
     else:
+        times=1000
         agent = BaseAgent()
 
-    for x in range(10):
-        env = PickStartGame([agent])
+    agents = [agent]+[BaseAgent() for x in range(4)]
+
+    for x in range(1000):
+        env = PickStartGame(agents)
         env.play()
 
 def southern_minigame():

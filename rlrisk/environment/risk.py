@@ -162,6 +162,7 @@ class Risk:
 
         #Notes whether or not they should recieve a card if they win
         first=True
+
         
         while choice!=False:
 
@@ -174,11 +175,16 @@ class Risk:
             if result==-1:
                 break
             elif result==1:
+
+                #give player a card if first conquest this turn
                 if first:
-                    self.reward_card(player) #give player a card
+                    self.reward_card(player)
+
+                #move troops into territory
                 attack_from,attack_to = choice
                 territories[attack_from][1]-=1
                 territories[attack_to][1]=1
+                loosing_player = territories[attack_to][0]
                 territories[attack_to][0]=player
 
                 if self.has_gui and self.verbose_gui:
@@ -196,6 +202,12 @@ class Risk:
                     first=False
                 else:
                     choice=False
+
+                if self.steal_cards:
+                    #determines if the defender lost their last territory
+                    if self.defeated(loosing_player):
+                        #transfer all defender's cards to attacker
+                        self.transfer_cards(loosing_player, player)
 
             else:
                 temp = current_player.take_action(self.state, 2, (True, False))
@@ -499,6 +511,7 @@ class Risk:
         options = [x+1 for x in range(3) if max_attack_troops>x+1]
 
         attacker_player = self.players[territories[attacker][0]]
+        attacker_player_number = territories[attacker][0]
 
         attacking = attacker_player.take_action(self.state, 3, options)
 
@@ -531,10 +544,6 @@ class Risk:
         territories[defender][1] = max_defend_troops
 
         if max_defend_troops == 0:
-            territories[attacker][1]-=attacking
-            territories[defender][1]=attacking
-            territories[defender][0]=attacker_player
-            self.state = (territories, cards, trade_ins)
             return 1
         
         if max_attack_troops == 1:
@@ -723,6 +732,28 @@ class Risk:
         #set that card to now owned by player
         cards[chosen] = player
 
+    def transfer_cards(self, from_player, to_player):
+        '''Set's ownership of all cards from one player to another player'''
+
+        territories, cards, trade_ins = self.state
+
+        c_owned_from = [c for c in cards if cards[c]==from_player]
+        c_owned_to = [c for c in cards if cards[c]==to_player]
+
+        #transfer
+        for c in c_owned_from:
+            cards[c]=to_player
+
+        #if cards now owned greater than or equal to 6, force player to trade in
+        if len(c_owned_from)+len(c_owned_to)>=6:
+            set_list, card_count = self.get_sets(to_player)
+            while card_count>=6:
+                #force them to trade in and distribute troops until
+                #they are below 6
+                troop_reward = self.trade_in(to_player, set_list, card_count)
+                self.place_troops(to_player, troop_reward)
+                card_count-=3
+
     def players_choose_territories(self):
         '''for when territories are not dealt at random'''
         #players are prompted by turn order for a territory selection
@@ -827,10 +858,10 @@ class Risk:
         if len(players)>6 or len(players)<2:
             raise ValueError("Players must be between 2 and 6")
 
+        steal_cards=True
         turn_order = config.turn_order(len(players), 'r') #random turns
         trade_vals = config.get_trade_vals('s') #standard trade in vals
-            
-        env = Risk(players, turn_order, trade_vals, True, has_gui, verbose_gui)
+        env = Risk(players, turn_order, trade_vals, steal_cards, has_gui, verbose_gui)
 
         env.deal_territories() #territories are assigned at random
 
