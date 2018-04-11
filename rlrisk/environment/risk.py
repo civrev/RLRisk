@@ -575,7 +575,7 @@ class Risk:
             t_count=3
 
         #now add to amount recruited
-        recruit+=t_count
+        recruit=t_count
 
         #calculate for continents
         for continent in self.continents:
