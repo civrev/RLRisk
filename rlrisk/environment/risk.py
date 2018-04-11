@@ -36,7 +36,7 @@ class Risk:
         self.turn_order = turn_order #order in which players take turns, includes # of players
         self.trade_vals = trade_vals #values for card set trade ins
         self.steal_cards = steal_cards #whether or not cards are taken after player defeat
-        self.con_rewards = self.continent_rewards() #rewards for owning continents
+        #self.con_rewards = self.continent_rewards() #rewards for owning continents
         self.troop_record = []
         self.owner_record = []
         self.card_record = []

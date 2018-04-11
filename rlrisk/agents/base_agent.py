@@ -7,12 +7,8 @@ see it's sub-classes for actual functionality
 
 import random
 
-class BaseAgent(object):
+class BaseAgent:
     """A base agent for Risk"""
-
-
-    def __init__(self):
-        pass
 
     def pregame_setup(self, player, trade_vals, turn_order, steal_cards):
         '''
