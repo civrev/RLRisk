@@ -6,7 +6,7 @@ from rlrisk.agents.base_agent import BaseAgent
 from rlrisk.agents.human import Human
 
 class Risk(object):
-    '''Game Environment for Risk World Domination'''
+    """Game Environment for Risk World Domination Ruleset"""
 
     def __init__(self, agents, turn_order="c", trade_vals="s", steal_cards=False,
                  deal=True, has_gui=False, verbose_gui=False, debug=False):
@@ -29,8 +29,8 @@ class Risk(object):
             "c" = Clockwise (as in increasing) order from random player
             "r" = Random turn order. Turn order will not be increasing, but will
                   remain constant throughout game
-            List = List of custom turn order for agents
-                   Example [0, 3, 1, 2] Player 1 will go first, followed by player 3
+            List = List of custom turn order for index of agents
+                   Example [0, 2, 3, 1] Player 1 will go first, followed by player 3
                    then player 4 and then player 2
 
             "c" by default
@@ -106,7 +106,8 @@ class Risk(object):
         Play the game
 
         Begins the game with the rules and variations set forth during
-        instantiation.
+        instantiation. Games start with territory allotment, and then
+        proceed to the main portion of the game, turn taking. 
 
         Parameters
         ----------
@@ -127,12 +128,8 @@ class Risk(object):
 
         num_players = len(self.players)
 
-        #deal territories randomly, or let players pick territories
-        if self.deal:
-            self.deal_territories()
-        else:
-            self.pick_territories()
-
+        #divy up territories at game start
+        self.allocate_territories()
         self.gui_update()
 
         #Main game loop
@@ -182,15 +179,214 @@ class Risk(object):
                 self.turn_order,
                 self.steal_cards)
 
-
-    def deal_territories(self):
+    def recruitment_phase(self, player):
         """
-        Deals territories randomly to players
+        Executes recruitment phase
 
-        Assigns 1 troop to each player randomly in a territory
-        going by turn order
+        Collects the number of troops a player should recieve at turn start,
+        then asks the player to distribute them. Afterwards if the player has
+        cards to trade in they may choose to (or must) do so at this time.
 
-        Optional Parameters
+        Required Parameters
+        ----------
+        player :
+            The index of the agent in self.players
+        
+        Returns
+        -------
+        None
+
+        """
+
+        recruited = self.calculate_recruits(player)
+        self.place_troops(player,recruited)
+
+        #gets card sets, if they have card sets ask the player if they want to trade
+        set_list,card_count = self.get_sets(player)
+        if len(set_list)!=0:
+            recruited = self.trade_in(player, set_list, card_count)
+            #zero is they chose not to trade in a set
+            if recruited!=0:
+                self.place_troops(player, recruited)
+
+    def get_owned_territories(self, player):
+        """
+        Finds all territories owned by the player
+
+        Required Parameters
+        ----------
+        player :
+            The index of the agent in self.players
+        
+        Returns
+        -------
+        (?,) Numpy Array:
+            The IDs of territories owned by the player
+
+        """
+
+        territories, cards, trade_ins = self.state
+        return np.where(territories[:,0]==player)[0]
+
+    def calculate_recruits(self, player):
+        """
+        Calculates the number of troops recruited at turn start
+
+        Sums troop bonuses based on territories own and continent bonuses
+
+        Required Parameters
+        ----------
+        player :
+            The index of the agent in self.players
+        
+        Returns
+        -------
+        integer :
+            The number of troops to be recruited
+
+        """
+        territories, cards, trade_ins = self.state
+
+        territories_owned = self.get_owned_territories(player)
+
+        #Risk rules say # of owned territories then floor division by 3
+        recruitment = len(territories_owned)//3
+
+        #you always get at least 3
+        if recruitment < 3:
+            recruitment = 3
+
+        #Calculate for continents
+        for continent in self.continents:
+            c_owned=True
+            for territory in self.continents[continent]:
+                if territory not in territories_owned:
+                    c_owned=False
+
+        if c_owned:
+                recruitment += self.con_rewards[continent]
+
+        return recruitment
+
+    def place_troops(self, player, troops):
+        """
+        Place troops into owned territory
+
+        Prompts the player for a territory to place troops one at a time
+
+        Required Parameters
+        ----------
+        player :
+            The index of the agent in self.players
+
+        troops :
+            Number of troop the player must place
+        
+        Returns
+        -------
+        None
+
+        """
+
+        territories, cards, trade_ins = self.state
+        current_player = self.players[player]
+
+        for troop in range(troops):
+            valid = self.get_owned_territories(player)
+            chosen = current_player.take_action(self.state, 0, valid)
+            territories[chosen][1]+=1
+            self.state = (territories, cards, trade_ins)
+            self.gui_update(True)
+
+    def get_sets(self, player):
+        """
+        Calculates the number of unique tradable card sets
+
+        Generates all unique combination of cards the player owns
+        that may be traded in. Valid sets are:
+            - any 3 of same kind
+            - set of 1,5,10
+            - any 2 and a wild card
+
+        Required Parameters
+        ----------
+        player :
+            The index of the agent in self.players
+        
+        Returns
+        -------
+        List of Lists:
+            All the unique arrangements of card that can be traded in
+
+        integer :
+            The number of cards a player owns
+
+        """
+
+        territories, cards, trade_ins = self.state
+
+        cards_owned = np.where(cards==player)[0]
+
+        one = []
+        five = []
+        ten = []
+        wild = []
+        set_list = []
+
+        for card in cards_owned:
+            if self.card_faces[card] == 1:
+                one.append(card)
+            elif self.card_faces[card] == 5:
+                five.append(card)
+            elif self.card_faces[card] == 10:
+                ten.append(card)
+            else:
+                wild.append(card)
+
+        #three of a kind
+        if len(one)>=3:
+            set_list.append(one[:3])
+        if len(five)>=3:
+            set_list.append(five[:3])
+        if len(ten)>=3:
+            set_list.append(ten[:3])
+
+        #one of each kind
+        if len(one)>=1 and len(five)>=1 and len(ten)>=1:
+            set_list.append([one[0],five[0],ten[0]])
+
+        #wild card sets
+        for wc in wild:
+            if len(one)>=2:
+                #two of ones
+                set_list.append([one[0], one[1], wc])
+            if len(five)>=2:
+                #two of fives
+                set_list.append([five[0], five[1], wc])
+            if len(ten)>=2:
+                #two of tens
+                set_list.append([ten[0], ten[1], wc])
+            if len(one)!=0 and len(five)!=0:
+                #one 1 and one 5
+                set_list.append([one[0], five[0], wc])
+            if len(one)!=0 and len(ten)!=0:
+                #one 1 and one 10
+                set_list.append([one[0], ten[0], wc])
+            if len(ten)!=0 and len(five)!=0:
+                #one 5 and one 10
+                set_list.append([ten[0], five[0], wc])
+
+        return (set_list, len(cards_owned))
+
+    def allocate_territories(self):
+        """
+        Allocates territories to players at game start
+
+        If rules are to randomly deal, assigns 1 troop to each player randomly
+        in a territory going by turn order. Otherwise allows players to
+        choose territories one by one
+
+        Parameters
         ----------
         None
         
@@ -205,10 +401,13 @@ class Risk(object):
         remaining = list(range(42))
 
         for index in range(42):
-            
+
             player_id = self.turn_order[index%len(self.turn_order)]
 
-            chosen = random.choice(remaining)
+            if self.deal:
+                chosen = random.choice(remaining)
+            else:
+                chosen = self.players[turn].take_action(self.state, 9, valid)
 
             remaining.remove(chosen)
 
@@ -398,6 +597,6 @@ class Risk(object):
 
 #Get rid of this for full version ----------------------------------------------
 if __name__ == "__main__":
-    p = BaseAgent()
-    print(p.defeated)
+    
+    print(Risk([BaseAgent() for x in range(6)]).play())
     
