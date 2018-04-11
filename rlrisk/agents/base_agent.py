@@ -10,9 +10,6 @@ import random
 class BaseAgent:
     """A base agent for Risk"""
 
-    def __init__(self):
-        self.defeated = False
-
     def pregame_setup(self, player, trade_vals, turn_order, steal_cards):
         '''
         Static information for the agent's reference that
@@ -26,6 +23,8 @@ class BaseAgent:
         self.turn_order = turn_order
         #whether or not you get the cards of another player upon their defeat
         self.steal_cards = steal_cards
+        #at game start player has not been defeated
+        self.defeated = False
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''

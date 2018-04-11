@@ -403,7 +403,7 @@ class Risk:
 
         return winner
 
-    def defeated(self, player, debug=False):
+    def defeated(self, player):
         '''checks if a player has any territories'''
 
         territories, cards, trade_ins = self.state
