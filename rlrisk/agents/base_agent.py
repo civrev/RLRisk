@@ -10,6 +10,9 @@ import random
 class BaseAgent:
     """A base agent for Risk"""
 
+    def __init__(self):
+        self.defeated = False
+
     def pregame_setup(self, player, trade_vals, turn_order, steal_cards):
         '''
         Static information for the agent's reference that

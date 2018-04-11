@@ -21,7 +21,6 @@ class Human(BaseAgent):
                      7:'Where should 1 troop move after the attack?',
                      8:'Which arrangement of cards would you like to trade in?',
                      9:'Choose Territories at game start'}
-        self.new_number = 77
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''

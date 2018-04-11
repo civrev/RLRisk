@@ -399,4 +399,5 @@ class Risk(object):
 #Get rid of this for full version ----------------------------------------------
 if __name__ == "__main__":
     p = BaseAgent()
+    print(p.defeated)
     
