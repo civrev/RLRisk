@@ -11,6 +11,7 @@ setup(
     license = '',
     url='https://github.com/civrev/rlrisk',
     packages = find_packages(),
+    package_data={'rlrisk': ['environment/*bmp']},
     install_requires = [
         'numpy>=1.14.1',
         'pygame>=1.9.3']

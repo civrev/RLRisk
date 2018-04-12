@@ -23,7 +23,7 @@ class GUI(object):
         pygame.display.set_caption("RLRisk - Reinforcement Learning Environment")
 
         #load image and make background
-        self.background = pygame.image.load(os.path.join(os.getcwd(),'rlrisk/environment/board.bmp'))
+        self.background = pygame.image.load('./board.bmp')
         self.size = self.background.get_size()
         self.screen = pygame.display.set_mode(self.size)
         self.background = self.background.convert()
@@ -185,4 +185,3 @@ class GUI(object):
             label = self.font.render(str(players_cards[p]),1,self.colors['black'])
             self.screen.blit(label,(x-12,y-6))
 
-        

@@ -159,7 +159,7 @@ class Risk(object):
             turn = self.turn_order[self.turn_count%num_players]
 
             #check if player is defeated, if so skip turn
-            if self.players[turn].defeated:
+            while self.players[turn].defeated:
                 self.turn_count+=1
                 turn = self.turn_order[self.turn_count%num_players]
 
@@ -182,6 +182,10 @@ class Risk(object):
 
             #increase turn count
             self.turn_count+=1
+
+            #DEBUG(((((((((((((((((((((((((((((((((((((((((((((((((((()))))
+            if self.turn_count%200 == 0:
+                print(self.turn_count)
 
         #exit message
         winner = self.turn_order[(self.turn_count-1)%num_players]+1
@@ -324,11 +328,13 @@ class Risk(object):
 
         owned = self.get_owned_territories(player)
         valid_source = owned[np.where(territories[owned, 1]>1)[0]]
-        source = self.players[player].take_action(self.state, 4, valid_source+[False])
+        source = False
+        if len(valid_source)>0:
+            source = self.players[player].take_action(self.state, 4, valid_source+[False])
 
         if source != False:
             if self.fortify_adjacent:
-                valid_destinations = owned[owned==self.board[source]]
+                valid_destinations = np.intersect1d(owned,self.board[source])
             else:
                 valid_destinations = self.map_connected_territories(source, owned)
 
@@ -375,7 +381,7 @@ class Risk(object):
 
             choice = self.players[player].take_action(self.state, 6, (source, destination))
 
-            if choice==to:
+            if choice==destination:
                 territories[destination][1]+= 1
             else:
                 territories[source][1]+= 1
@@ -732,6 +738,10 @@ class Risk(object):
 
         for troop in range(troops):
             valid = self.get_owned_territories(player)
+            if len(valid) == 0:
+                print(valid, player)
+                print(current_player.defeated)
+                print(territories)
             chosen = current_player.take_action(self.state, 0, valid)
             territories[chosen][1]+=1
             self.state = (territories, cards, trade_ins)
@@ -1086,7 +1096,7 @@ class Risk(object):
 #Get rid of this for full version ----------------------------------------------
 if __name__ == "__main__":
 
-    env = Risk([BaseAgent() for x in range(6)])
+    env = Risk([BaseAgent() for x in range(6)], has_gui=True)
     territories, cards, trade_ins = env.state
     results = env.play()
     print(results)
