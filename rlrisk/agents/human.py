@@ -14,16 +14,21 @@ class Human(BaseAgent):
                      1:'Choose an attack to perform (From, To)\nFalse is for no attack',
                      2:'Continue Attack?',
                      3:'How many troops do you want to risk in battle?',
-                     4:'Reinforce from what territory?',
+                     4:'Reinforce from what territory?\nFalse is do not fortify',
                      5:'Send reinforcements to what territory?',
                      6:'Where should 1 troop go during reinforcement?',
                      7:'Where should 1 troop move after the attack?',
                      8:'Which arrangement of cards would you like to trade in?',
-                     9:'Choose Territories at game start'}
+                     9:'Choose Territories at game start',
+                     10:'Place 1 Troop in initial placement'}
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''
 
+        #debug ###############################################################
+        if action_code == 3:
+            return options[-1]
+        
         print(self.acodes[action_code])
         for index,option in enumerate(options):
             print(index,'is for option',option)

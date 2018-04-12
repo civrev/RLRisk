@@ -73,7 +73,7 @@ def get_trade_vals(choice = ""):
 
     if choice == "s":
         def standard_trade_gen():
-            for x in  [0,4,6,8,10,15]:
+            for x in  [4,6,8,10,15]:
                 yield x
             num = 15
             while True:

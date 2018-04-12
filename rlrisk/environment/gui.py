@@ -5,6 +5,7 @@ creating a Risk object
 '''
 
 import pygame
+import os
 import numpy as np
 
 class GUI(object):
@@ -24,7 +25,8 @@ class GUI(object):
         pygame.display.set_caption("RLRisk - Reinforcement Learning Environment")
 
         #load image and make background
-        self.background = pygame.image.load('./board.bmp')
+        path = os.path.dirname(__file__)
+        self.background = pygame.image.load(os.path.join(path,'board.bmp'))
         self.size = self.background.get_size()
         self.screen = pygame.display.set_mode(self.size)
         self.background = self.background.convert()
