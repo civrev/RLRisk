@@ -5,28 +5,6 @@ GUI or headless modes
 '''
 
 import random
-from rlrisk.agents import base_agent
-from rlrisk.agents import human
-
-def console_players():
-    '''
-    used to gather user configuration settings for game
-    NOTE: this is not needed for the GUI
-    '''
-
-    players = int(input("How many players? "))
-
-    if input("Deal territories to players? y/n ")=='y':
-        deal=True
-    else:
-        deal=False
-
-    if input("Take cards upon player defeat? y/n ")=='y':
-        steal_cards=True
-    else:
-        steal_cards=False
-
-    return (players, deal, steal_cards)
 
 def turn_order(players, clockwise = "", debug=False):
     '''
@@ -80,29 +58,6 @@ def turn_order(players, clockwise = "", debug=False):
         
     return order
 
-def console_get_players(players):
-    '''
-    configure what kind of player each player is and return them in a list
-    NOTE: not needed for the GUI
-    '''
-
-    agent_list = []
-
-    for player in range(players):
-
-        prompt = ("What kind of player is " + str(player+1) +
-                  "\nA human = h\nA BaseAgent = b\nA RL agent = r\nh/b/r: ")
-        ans = input(prompt)
-
-        if ans == 'h':
-            agent_list.append(human.Human(player))
-        elif ans == 'b':
-            agent_list.append(base_agent.BaseAgent(player))
-        else:
-            raise ValueError("No agent of that ID exist yet")
-
-    return agent_list
-
 def get_trade_vals(choice = ""):
     '''
     user chooses setting for card set trade in values
@@ -117,9 +72,16 @@ def get_trade_vals(choice = ""):
         choice = input(prompt)
 
     if choice == "s":
-        values = [0,4,6,8,10,15,20,25,30,35,40,45,50,55,60]
+        def standard_trade_gen():
+            for x in  [4,6,8,10,15]:
+                yield x
+            num = 15
+            while True:
+                num+=5
+                yield num
+        values = standard_trade_gen()
     elif choice == "1":
-        values = list(range(4,1000))
+        values = range(4,10**20)
     else:
         values = [int(x) for x in input("Type values seperated by space: ").split()]
 

@@ -7,26 +7,27 @@ see it's sub-classes for actual functionality
 
 import random
 
-class BaseAgent(object):
+class BaseAgent:
     """A base agent for Risk"""
 
-
-    def __init__(self):
-        pass
-
-    def pregame_setup(self, player, trade_vals, turn_order, steal_cards):
+    def pregame_setup(self, setup_values):
         '''
         Static information for the agent's reference that
         are instatiated at the start of every game
         '''
         #what player this agent is
-        self.player = player
+        self.player = setup_values[0]
         #the sequence from which card set trade in rewards are given
-        self.trade_vals = trade_vals
+        self.trade_vals = setup_values[1]
         #the order which players take turns
-        self.turn_order = turn_order
+        self.turn_order = setup_values[2]
         #whether or not you get the cards of another player upon their defeat
-        self.steal_cards = steal_cards
+        self.steal_cards = setup_values[3]
+        #game board for reference
+        self.board = setup_values[4]
+        #at game start player has not been defeated
+        self.defeated = False
+        
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''
@@ -46,14 +47,8 @@ class BaseAgent(object):
         7 = distrubte_troops_into_conquered_territory_after_attack
         8 = choose_which_arrangement_of_cards_to_trade_in
         9 = choose_initial_territory
+        10 = place_initial_troops
         '''
-        #always risk maximum troops during attack
-        if action_code == 3:
-            return options[-1]
-
-        #never retreat        
-        if action_code == 2:
-            return True
-
-        #typical random action
+        
+        #random action
         return random.choice(options)
