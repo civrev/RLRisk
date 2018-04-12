@@ -10,18 +10,26 @@ import pandas as pd
 from rlrisk.environment import  config, gui
 from rlrisk.environment.risk import Risk
 from rlrisk.agents.base_agent import BaseAgent
+from rlrisk.agents.aggressive import AggressiveAgent
 from rlrisk.agents.human import Human
 from rlrisk.minigames.pick_start_positions import PickStartGame
 from rlrisk.minigames.southern_warfare import SouthernWarfare
 
 
+def multi_game():
 
+    players = [AggressiveAgent() for x in range(6)]
+    ui = int(input("How many games? "))
+    length=[]
+    for x in range(ui):
+        length.append(Risk(players).play()[0].shape[0])
+    print('Done! Average game is ',sum(length)/len(length),'turns')
     
 
 #****************************************************************
-menu = {}
+menu = {'1: Play Multiple Aggressive Games':multi_game}
 
-stop = True
+stop = False
 while not stop:
     [print(x) for x in sorted(list(menu.keys()))]
     print('-1 for quit')

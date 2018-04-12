@@ -39,7 +39,7 @@ class BaseAgent:
         Action Codes represent what part of the game is requesting an action
         0 = place_troops_during_recruitment
         1 = choose_attack
-        2 = press_the attack_during_combat
+        2 = press_the_attack_during_combat
         3 = choose_size_of_troops_to_risk_during_attack
         4 = reinforce_from_province
         5 = reinforce_to_province

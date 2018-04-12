@@ -156,7 +156,6 @@ class Risk(object):
             self.card_ownership_record.append(np.copy(self.state[1]))
             self.trade_in_record.append(self.state[2])
 
-
             #get the index of player whose turn it is
             turn = self.turn_order[self.turn_count%num_players]
 

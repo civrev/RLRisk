@@ -57,8 +57,8 @@ def plot_results(results):
     plt.show()
 
 #How to run a game using the normal rules
-players = [BaseAgent() for x in range(5)]+[AggressiveAgent() for x in range(1)]
-env = risk.Risk(players, has_gui=False)
+players = [AggressiveAgent() for x in range(6)]
+env = risk.Risk(players, has_gui=True, verbose_gui=True)
 results = env.play()
 
 plot_results(results)
