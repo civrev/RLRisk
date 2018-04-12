@@ -356,7 +356,7 @@ class Risk(object):
         Required Parameters
         ----------
         player : integer
-            The index of the agent in self.players to recieve a card
+            The index of the agent in self.players
 
         source : integer
             Territory ID of source of troop transfer
@@ -387,6 +387,43 @@ class Risk(object):
                 territories[source][1]+= 1
 
             self.gui_update(True)
+
+    def map_connected_territories(self, source, owned):
+        """
+        Generates all territories connected to a given territory owned by a player
+
+        Performs breadth first search on the board to construct the breadth
+        first traversal of the spanner tree rooted at the source province.
+        Only counts territory owned by the same player.
+
+        Required Parameters
+        ----------
+        source : integer
+            Territory ID to get territories connected to with same owner
+
+        owned : List
+            List of territory IDs owned by same player as source
+
+        
+        Returns
+        -------
+        List :
+            List of Territories ID that are part of contiguous owned territory
+
+        """
+        
+        contiguous = [source]
+
+        index = 0
+        while True:
+            for t in self.board[contiguous[index]]:
+                if t in owned and t not in contiguous:
+                    contiguous.append(t)
+            index+=1
+            if index>=len(contiguous):
+                break
+
+        return contiguous
 
     def get_targets(self, player, frm=-1):
         """
@@ -738,10 +775,6 @@ class Risk(object):
 
         for troop in range(troops):
             valid = self.get_owned_territories(player)
-            if len(valid) == 0:
-                print(valid, player)
-                print(current_player.defeated)
-                print(territories)
             chosen = current_player.take_action(self.state, 0, valid)
             territories[chosen][1]+=1
             self.state = (territories, cards, trade_ins)
@@ -1096,7 +1129,7 @@ class Risk(object):
 #Get rid of this for full version ----------------------------------------------
 if __name__ == "__main__":
 
-    env = Risk([BaseAgent() for x in range(6)], has_gui=True)
+    env = Risk([BaseAgent() for x in range(6)], has_gui=False, fortify_adjacent=False)
     territories, cards, trade_ins = env.state
     results = env.play()
     print(results)

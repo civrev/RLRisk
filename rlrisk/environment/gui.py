@@ -4,7 +4,8 @@ it can be used by setting the GUI flag when
 creating a Risk object
 '''
 
-import pygame, os
+import pygame
+import numpy as np
 
 class GUI(object):
     '''
@@ -81,19 +82,20 @@ class GUI(object):
         self.screen.blit(self.background, self.backgroundRect)
 
         #get the territories dictionary
-        territories = state[0]
+        territories, cards, trade_ins = state
+
 
         #now color and text cirlces
         for key in self.positions:
             #get owner and troop values
-            t_owner,troops = territories[key]
+            territory = territories[key]
 
             #color all the circles their respective colors
-            pygame.draw.circle(self.screen, self.colors[self.p2c[t_owner]],
+            pygame.draw.circle(self.screen, self.colors[self.p2c[territory[0]]],
                                self.positions[key], 14, 0)
 
             #now add the troop count font
-            label = self.font.render(str(troops),1,self.colors['black'])
+            label = self.font.render(str(territory[1]),1,self.colors['black'])
 
             #and the province id
             label_id = self.id_font.render(str(key),1,self.colors['white'])
@@ -167,9 +169,9 @@ class GUI(object):
 
         players_cards={}
         for num in range(8):
-            players_cards[num]=0
-        for key in cards:
-            players_cards[cards[key]]+=1
+            players_cards[num]=cards[cards==num].shape[0]
+
+
 
         #remove invalid players
         players_cards.pop(6,None)
