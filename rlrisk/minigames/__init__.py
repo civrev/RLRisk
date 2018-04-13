@@ -5,3 +5,7 @@ https://github.com/civrev/RLRisk
 
 by Christian Watts
 '''
+
+from .pick_start_positions import SPMinigame
+
+__all__ = ['SPMinigame']

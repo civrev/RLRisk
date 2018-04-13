@@ -86,10 +86,3 @@ class SPMinigame(Risk):
 
             if self.has_gui:
                 time.sleep(self.sleep_val)
-        
-
-if __name__=='__main__':
-    players = [AggressiveAgent() for x in range(6)]
-    env = SPMinigame(players, has_gui=True, sleep_val=0.5)
-    results = env.play()
-    [print(x[:20]) for x in results]

@@ -20,10 +20,17 @@ def multi_game():
     for x in range(ui):
         length.append(Risk(players).play()[0].shape[0])
     print('Done! Average game is ',sum(length)/len(length),'turns')
+
+def start_mg():
+    players = [AggressiveAgent() for x in range(6)]
+    env = SPMinigame(players, has_gui=True, sleep_val=0.5)
+    results = env.play()
+    [print(x[:20]) for x in results]
     
 
 #****************************************************************
-menu = {'1: Play Multiple Aggressive Games':multi_game}
+menu = {'1: Play Multiple Aggressive Games':multi_game,
+        '2: Play Starting Positions Minigame':start_mg}
 
 stop = False
 while not stop:
