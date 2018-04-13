@@ -7,6 +7,7 @@ import os
 import pygame
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from rlrisk.environment import *
 from rlrisk.agents import *
 from rlrisk.minigames import *
@@ -23,9 +24,11 @@ def multi_game():
 
 def start_mg():
     players = [AggressiveAgent() for x in range(6)]
-    env = SPMinigame(players, has_gui=True, sleep_val=0.5)
-    results = env.play()
-    [print(x[:20]) for x in results]
+    ui = int(input("How many games? "))
+    gui = int(input("With gui? 0/1 "))
+    for x in range(ui):
+        SPMinigame(players, has_gui=gui, sleep_val=0).play()
+    print('Done!',ui,'Minigames where played!')
     
 
 #****************************************************************

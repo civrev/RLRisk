@@ -42,7 +42,6 @@ class SPMinigame(Risk):
 
         """
         self.allocate_territories()
-        self.gui.quit_game()
         return np.array(self.record[0])
 
     def allocate_territories(self):
@@ -71,7 +70,6 @@ class SPMinigame(Risk):
 
             turn = self.turn_order[index%len(self.turn_order)]
 
-            print('DEBUB Asked',9)
             chosen = self.players[turn].take_action(self.state, 9, remaining)
 
             remaining.remove(chosen)
@@ -86,3 +84,6 @@ class SPMinigame(Risk):
 
             if self.has_gui:
                 time.sleep(self.sleep_val)
+
+        self.game_over=True
+        self.gui_update()

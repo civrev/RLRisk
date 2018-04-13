@@ -1,11 +1,15 @@
-import rlrisk as rlr
-from rlrisk.minigames.southern_gui import SGUI
+from rlrisk.environment import Risk
+from rlrisk.minigames import SWGUI
+from rlrisk.agents import BaseAgent
 
-class SouthernWarfare(object):
+class SouthernWarfare(Risk):
     '''A minigame the uses the full Risk game just for S. America and Africa'''
 
-    def __init__(self, agents):
-        '''sets up minigame'''
-        self.gui = SGUI()
-        self.board, self.continents, cf = rlr.environment.risk.Risk.gen_board()
-        self.state = rlr.environment.risk.Risk.gen_init_state(False, [0])
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        self.gui = SWGUI()
+
+if __name__=='__main__':
+    players = [BaseAgent() for x in range(3)]
+    env = SouthernWarfare(players)
+    print(env.board)

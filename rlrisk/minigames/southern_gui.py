@@ -3,16 +3,15 @@ This class is the GUI for the minigame southern warfare
 '''
 
 import pygame, os
-from rlrisk.environment.gui import GUI
-from rlrisk.environment.risk import Risk
+from rlrisk.environment import GUI, Risk
 
-class SGUI(GUI):
+class SWGUI(GUI):
 
     def __init__(self):
         super().__init__()
 
         #filter out stuff we don't use in this minigame
-        board, continents, cards = Risk.gen_board()
+        board, continents, cards, continent_r = Risk.gen_board()
         concerned = set(continents['Africa']+continents['S_America'])
         to_pop = set(board) - concerned
         [self.positions.pop(x) for x in to_pop]
@@ -24,6 +23,4 @@ class SGUI(GUI):
             x,y = self.positions[p]
             self.positions[p]=(x-left,y-top)
         self.init_draw()
-        
-        
         
