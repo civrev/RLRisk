@@ -7,13 +7,9 @@ import os
 import pygame
 import numpy as np
 import pandas as pd
-from rlrisk.environment import  config, gui
-from rlrisk.environment.risk import Risk
-from rlrisk.agents.base_agent import BaseAgent
-from rlrisk.agents.aggressive import AggressiveAgent
-from rlrisk.agents.human import Human
-from rlrisk.minigames.pick_start_positions import PickStartGame
-from rlrisk.minigames.southern_warfare import SouthernWarfare
+from rlrisk.environment import *
+from rlrisk.agents import *
+from rlrisk.minigames import *
 
 
 def multi_game():

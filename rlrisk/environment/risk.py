@@ -20,7 +20,7 @@ class Risk(object):
 
         Required Parameters
         ----------
-        agents : List/Tuple 2 <= len(agents) <= 6
+        agents : List, 2 <= len(agents) <= 6
             List of agents that will be the players in the game. Agents must
             be BaseAgent or subclass of BaseAgent, or at least follow the general
             structure of that class
@@ -1028,19 +1028,19 @@ class Risk(object):
 
         for index in range(42):
 
-            player_id = self.turn_order[index%len(self.turn_order)]
+            turn = self.turn_order[index%len(self.turn_order)]
 
             if self.deal:
                 chosen = random.choice(remaining)
             else:
-                chosen = self.players[turn].take_action(self.state, 9, valid)
+                chosen = self.players[turn].take_action(self.state, 9, remaining)
 
             remaining.remove(chosen)
 
-            territories[chosen][0]=player_id
+            territories[chosen][0]=turn
             territories[chosen][1]=1
 
-        self.state = (territories, cards, trade_ins)
+            self.state = (territories, cards, trade_ins)
 
 
     def gui_update(self, verbose=False):
