@@ -1,14 +1,15 @@
 import random
 import itertools
+import math
 import numpy as np
-from rlrisk.environment import config, gui
+from rlrisk.environment import config, GUI
 
 class Risk(object):
     """Game Environment for Risk World Domination Ruleset"""
 
     def __init__(self, agents, turn_order="c", trade_vals="s",
                  steal_cards=False, deal=True, fortify_adjacent=True,
-                 has_gui=False, verbose_gui=False):
+                 has_gui=False, verbose_gui=False, turn_cap=math.inf):
         """
         Risk Constructor
 
@@ -19,8 +20,8 @@ class Risk(object):
 
         Required Parameters
         ----------
-        agents : List/Tuple of BaseAgent class or subclasses
-            List of agents that will be the players in the game. Players must
+        agents : List/Tuple 2 <= len(agents) <= 6
+            List of agents that will be the players in the game. Agents must
             be BaseAgent or subclass of BaseAgent, or at least follow the general
             structure of that class
 
@@ -37,11 +38,14 @@ class Risk(object):
 
             "c" by default
 
-        trade_vals : String "s"/"1" or Generator
+        trade_vals : String "s"/"1" (letter one) or Generator
             Options for the sequence that generate card set trade in rewards
             "s" = Standard Risk trade in rewards
             "1" = Increasing by 1
             Generator = Generator representing a unique sequence of integers to reward
+
+            A copy of the generator used to get trade values is in
+            instance variable gen_backup
 
             "s" by default
 
@@ -69,9 +73,14 @@ class Risk(object):
 
         verbose_gui : boolean
             Whether or not to update Pygame gui in between individual troop allocations
-            useful when playing as Human agent. Considerable slows down the game.
+            useful when playing as Human agent. Considerably slows down the game.
 
-            False by default        
+            False by default
+
+        turn_cap : integer
+            Stops the game if it exceeds a given number of turns
+
+            Infinity by default
 
         Returns
         -------
@@ -79,36 +88,40 @@ class Risk(object):
 
         """
 
+        if len(agents)<2 or len(agents)>6:
+            raise ValueError("Invalid size for agents. Must be 2<=len(agents)<=6")
+
         self.players = agents
         
         if isinstance(turn_order, str):
-            self.turn_order = config.turn_order(len(agents), turn_order)
+            self.turn_order = config.get_turn_order(len(agents), turn_order)
         else:
             self.turn_order = turn_order
 
         if isinstance(trade_vals, str):
-            self.trade_vals = config.get_trade_vals(trade_vals)
+            self.orig_trade_vals = config.get_trade_vals(trade_vals)
         else:
-            self.trade_vals = trade_vals
+            self.orig_trade_vals = trade_vals
+
+        #A backup of the trade vals generator
+        self.trade_vals, self.gen_backup = itertools.tee(self.orig_trade_vals)
 
         self.steal_cards = steal_cards
         self.fortify_adjacent = fortify_adjacent
         self.has_gui = has_gui
         self.verbose_gui = verbose_gui
         self.deal = deal
+        self.turn_cap = turn_cap
 
         self.turn_count = 0
         self.game_over = False
         self.board, self.continents, self.card_faces, self.con_rewards = self.gen_board()
         self.state = self.gen_init_state()
         self.node2name, self.name2node = self.id_names()
-        self.troop_count_record = []
-        self.territory_owner_record = []
-        self.card_ownership_record = []
-        self.trade_in_record = []
+        self.record = {0:[],1:[],2:[],3:[]}
 
         if has_gui:
-            self.gui = gui.GUI()
+            self.gui = GUI()
 
         for plr_num, player in enumerate(agents):
             setup_values = [plr_num, trade_vals, turn_order, steal_cards, self.board]
@@ -128,7 +141,7 @@ class Risk(object):
         
         Returns
         -------
-        5 value tuple
+        6 value tuple
             (TurnCount,42) Numpy Array: Record of territory ownership
             (TurnCount,42) Numpy Array: Record of troops per territory
             (TurnCount,44) Numpy Array: Record of card ownership
@@ -151,10 +164,7 @@ class Risk(object):
         #Main game loop
         while not self.game_over:
             #record state
-            self.territory_owner_record.append(np.copy(self.state[0][:,0]))
-            self.troop_count_record.append(np.copy(self.state[0][:,1]))
-            self.card_ownership_record.append(np.copy(self.state[1]))
-            self.trade_in_record.append(self.state[2])
+            self.record_state()
 
             #get the index of player whose turn it is
             turn = self.turn_order[self.turn_count%num_players]
@@ -184,17 +194,24 @@ class Risk(object):
             #increase turn count
             self.turn_count+=1
 
+            if self.turn_count>self.turn_cap:
+                self.game_over = True
+                break
+
         #exit message
-        winner = self.turn_order[self.turn_count%num_players]+1
-        print("The game is over! Player",winner,"won the game!")
+        if self.turn_count>self.turn_cap:
+            print("The game is over! Turn Cap was reached.")
+        else:
+            winner = self.turn_order[self.turn_count%num_players]+1
+            print("The game is over! Player",winner,"won the game!")
 
         #quit gui
         self.gui_update()
 
-        return (np.array(self.territory_owner_record),
-                np.array(self.troop_count_record),
-                np.array(self.card_ownership_record),
-                np.array(self.trade_in_record),
+        return (np.array(self.record[0]),
+                np.array(self.record[1]),
+                np.array(self.record[2]),
+                np.array(self.record[3]),
                 self.turn_order,
                 self.steal_cards)
 
@@ -294,7 +311,7 @@ class Risk(object):
 
                 if territories[choice[1],1]>1:
                     targets = self.get_targets(player,frm=choice[1])
-                    choice = self.players[player].take_action(self.state, 1, targets)
+                    choice = self.players[player].take_action(self.state, 11, targets)
                 else:
                     break
 
@@ -346,6 +363,33 @@ class Risk(object):
                 destination = self.players[player].take_action(self.state, 5, valid_destinations)
 
                 self.fortify(player, source, destination)
+
+    def record_state(self):
+        """
+        Records the state of the game
+
+        Creates a list of the game state at the beginning of each turn.
+        At the end of the game, these are changed to numpy arrays and
+        returned.
+
+        The game state is the 3 value tuple, but the recording of the game
+        state breaks the 1st value (the territories with owner and troop count)
+        into 2 seperate arrays, the owner and troop count
+
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+
+        """
+
+        self.record[0].append(np.copy(self.state[0][:,0]))
+        self.record[1].append(np.copy(self.state[0][:,1]))
+        self.record[2].append(np.copy(self.state[1]))
+        self.record[3].append(self.state[2])
 
     def place_starting_troops(self):
         """

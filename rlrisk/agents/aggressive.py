@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from rlrisk.agents.base_agent import BaseAgent
+from rlrisk.agents import BaseAgent
 
 class AggressiveAgent(BaseAgent):
 
@@ -15,7 +15,7 @@ class AggressiveAgent(BaseAgent):
             return True
 
         #never pass on attack
-        if action_code == 1 and len(options)>1:
+        if action_code in [1,11] and len(options)>1:
             random.choice(options[:-1])
 
         #always sent troops to borders
@@ -23,6 +23,10 @@ class AggressiveAgent(BaseAgent):
             border_options = list(set(self.get_borders(state)).intersection(set(options)))
             if len(border_options)!=0:
                 return random.choice(border_options)
+
+        #When fortifying, always choose destination
+        if action_code == 6:
+            return options[-1]
 
         #always move troops into newly conquered territory
         if action_code == 7:

@@ -6,7 +6,7 @@ GUI or headless modes
 
 import random
 
-def turn_order(players, clockwise = "", debug=False):
+def get_turn_order(players, clockwise = "", debug=False):
     '''
     user chooses what method to generate turn order
 
@@ -64,6 +64,20 @@ def get_trade_vals(choice = ""):
     NOTE: not needed for the GUI
     '''
 
+    def standard_trade_gen():
+            for x in  [4,6,8,10,15]:
+                yield x
+            num = 15
+            while True:
+                num+=5
+                yield num
+
+    def by_one_gen():
+            num = 0
+            while True:
+                num+=1
+                yield num
+
     prompt = ("What do you want card trade in values to be?\n" +
         "Standard 4,6,8,10,15,...,60?\nBy one 4,5,6,etc?\nCustom values?\n" +
         "s/1/c: ")
@@ -72,17 +86,8 @@ def get_trade_vals(choice = ""):
         choice = input(prompt)
 
     if choice == "s":
-        def standard_trade_gen():
-            for x in  [4,6,8,10,15]:
-                yield x
-            num = 15
-            while True:
-                num+=5
-                yield num
         values = standard_trade_gen()
     elif choice == "1":
-        values = range(4,10**20)
-    else:
-        values = [int(x) for x in input("Type values seperated by space: ").split()]
-
+        values = by_one_gen()
+        
     return values

@@ -1,10 +1,8 @@
-#https://github.com/civrev/rlrisk
-
 from setuptools import setup, find_packages
 
 setup(
     name = 'rlrisk',
-    version = '0.9.2.1',
+    version = '0.9.4',
     description = 'A reinforcement learning environment based off the board game Risk',
     author = 'Christian Watts',
     author_email = 'civrev@gmail.com',

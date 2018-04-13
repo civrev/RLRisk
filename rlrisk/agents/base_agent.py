@@ -48,6 +48,7 @@ class BaseAgent:
         8 = choose_which_arrangement_of_cards_to_trade_in
         9 = choose_initial_territory
         10 = place_initial_troops
+        11 = after_attack_choose_another_attack
         '''
         
         #random action

@@ -4,7 +4,7 @@ it is the object used when a human
 wants to be a player in the game
 '''
 
-from rlrisk.agents.base_agent import BaseAgent
+from rlrisk.agents import BaseAgent
 
 class Human(BaseAgent):
     '''Allows for human users to play Risk RL'''
@@ -20,15 +20,11 @@ class Human(BaseAgent):
                      7:'Where should 1 troop move after the attack?',
                      8:'Which arrangement of cards would you like to trade in?',
                      9:'Choose Territories at game start',
-                     10:'Place 1 Troop in initial placement'}
+                     10:'Place 1 Troop in initial placement',
+                     11:'Choose which attack to follow up successful attack with\nFalse for no attack'}
 
     def take_action(self, state, action_code, options):
         '''The environment provides the state, and requests an action from the agent'''
-
-        #debug ###############################################################
-        if action_code == 3:
-            return options[-1]
-        
         print(self.acodes[action_code])
         for index,option in enumerate(options):
             print(index,'is for option',option)
