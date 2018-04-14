@@ -19,11 +19,15 @@ User installation
 
 To install this package, clone the repository to your local computer
 
-``git clone https://github.com/civrev/RLRisk``
+::
+
+    git clone https://github.com/civrev/RLRisk
 
 Then navigate to that directory and run setup.py
 
-``python setup.py install``
+::
+
+    python setup.py install
 
 Working with RLRisk
 ------------------------------
