@@ -6,14 +6,13 @@ creating a Risk object
 
 import pygame
 import os
-import numpy as np
 
 class GUI(object):
     '''
     The GUI for the game, which is optional, and functions
     related to the GUI
     '''
-    
+
     def __init__(self):
         self.colors = self.gen_colors()
         self.p2c = self.player_colors()
@@ -26,12 +25,12 @@ class GUI(object):
 
         #load image and make background
         path = os.path.dirname(__file__)
-        self.background = pygame.image.load(os.path.join(path,'board.bmp'))
+        self.background = pygame.image.load(os.path.join(path, 'board.bmp'))
         self.size = self.background.get_size()
         self.screen = pygame.display.set_mode(self.size)
         self.background = self.background.convert()
         self.positions = self.gen_positions()
-        self.backgroundRect = self.background.get_rect()
+        self.background_rect = self.background.get_rect()
         self.init_draw()
 
 
@@ -46,10 +45,11 @@ class GUI(object):
         '''Draws the initial screen'''
         self.size = self.background.get_size() #duplicate on purpose, for subclasses
         self.screen = pygame.display.set_mode(self.size)
-        self.screen.blit(self.background, self.backgroundRect)
-        [pygame.draw.circle(self.screen,self.colors["white"],(x,y),14, 0) for x,y in self.positions.values()]
+        self.screen.blit(self.background, self.background_rect)
+        for xpos, ypos in self.positions.values():
+            pygame.draw.circle(self.screen, self.colors["white"], (xpos, ypos), 14, 0)
         pygame.display.flip()
-        
+
     def loop_event(self, target_event_type):
         '''
         Loops through all the pygame events,
@@ -81,10 +81,10 @@ class GUI(object):
         pygame.event.clear()
 
         #reload original background
-        self.screen.blit(self.background, self.backgroundRect)
+        self.screen.blit(self.background, self.background_rect)
 
         #get the territories dictionary
-        territories, cards, trade_ins = state
+        territories = state[0]
 
 
         #now color and text cirlces
@@ -97,20 +97,20 @@ class GUI(object):
                                self.positions[key], 14, 0)
 
             #now add the troop count font
-            label = self.font.render(str(territory[1]),1,self.colors['black'])
+            label = self.font.render(str(territory[1]), 1, self.colors['black'])
 
             #and the province id
-            label_id = self.id_font.render(str(key),1,self.colors['white'])
-            
-            x,y = self.positions[key]
-            self.screen.blit(label,(x-12,y-6))
-            self.screen.blit(label_id,(x-6,y-30))
+            label_id = self.id_font.render(str(key), 1, self.colors['white'])
+
+            xpos, ypos = self.positions[key]
+            self.screen.blit(label, (xpos - 12, ypos - 6))
+            self.screen.blit(label_id, (xpos - 6, ypos - 30))
 
         self.draw_players(state)
 
         pygame.display.flip()
 
-            
+
 
     def quit_game(self):
         '''closes the pygame window'''
@@ -121,37 +121,36 @@ class GUI(object):
         '''returns a dictionary that matches ID to node positions in pygame'''
 
         positions = [
-            (80,120), (220,140), (440,100), (180,180), (240,200),
-            (340,200), (200,260), (280,270), (235,320), (355,370),
-            (430,430), (355,440), (370,500), (520,320), (620,305),
-            (640,345), (610,390), (610,460), (690,450), (930,390),
-            (1030,405), (960,470),(1050,480), (490,150), (515,200),
-            (570,150), (650,190), (570,210), (610,240), (515,250),
-            (680,280), (750,230), (800,150), (860,110), (980,110),
-            (1120,130), (920,180),(960,230), (1030,260), (920,280),
-            (800,310), (885,330)]
+            (80, 120), (220, 140), (440, 100), (180, 180), (240, 200),
+            (340, 200), (200, 260), (280, 270), (235, 320), (355, 370),
+            (430, 430), (355, 440), (370, 500), (520, 320), (620, 305),
+            (640, 345), (610, 390), (610, 460), (690, 450), (930, 390),
+            (1030, 405), (960, 470), (1050, 480), (490, 150), (515, 200),
+            (570, 150), (650, 190), (570, 210), (610, 240), (515, 250),
+            (680, 280), (750, 230), (800, 150), (860, 110), (980, 110),
+            (1120, 130), (920, 180), (960, 230), (1030, 260), (920, 280),
+            (800, 310), (885, 330)]
 
-        x,y = self.size
-        xmod = x/1200
-        ymod = y/600
+        xmod = lambda x: int(x * (self.size[0] / 1200))
+        ymod = lambda y: int(y * (self.size[1] / 600))
 
-        positions = [(int(p[0]*xmod),int(p[1]*ymod)) for p in positions]
+        positions = [(xmod(p[0]), ymod(p[1])) for p in positions]
 
-        return dict(zip(range(42),positions))
+        return dict(zip(range(42), positions))
 
     @staticmethod
     def gen_colors():
         '''returns a dictionary of RGB colors to be used in pygame'''
 
         colors = {
-            "red":(255,0,0),
-            "green":(0,255,0),
-            "cyan":(0,255,255),
-            "yellow":(255,255,0),
-            "purple":(255,0,255),
-            "orange":(255,128,0),
-            "white":(255,255,255),
-            "black":(0,0,0)
+            "red":(255, 0, 0),
+            "green":(0, 255, 0),
+            "cyan":(0, 255, 255),
+            "yellow":(255, 255, 0),
+            "purple":(255, 0, 255),
+            "orange":(255, 128, 0),
+            "white":(255, 255, 255),
+            "black":(0, 0, 0)
             }
 
         return colors
@@ -160,7 +159,13 @@ class GUI(object):
     def player_colors():
         '''assigned players colors in pygame'''
 
-        p2c = {-1:'white',0:"red",1:'green',2:'cyan',3:'yellow',4:'purple',5:'orange'}
+        p2c = {-1:'white',
+               0:"red",
+               1:'green',
+               2:'cyan',
+               3:'yellow',
+               4:'purple',
+               5:'orange'}
 
         return p2c
 
@@ -169,23 +174,21 @@ class GUI(object):
         '''draws the players and # cards in their hands'''
         cards = state[1]
 
-        players_cards={}
+        players_cards = {}
         for num in range(8):
-            players_cards[num]=cards[cards==num].shape[0]
-
-
+            players_cards[num] = cards[cards == num].shape[0]
 
         #remove invalid players
-        players_cards.pop(6,None)
-        players_cards.pop(7,None)
+        players_cards.pop(6, None)
+        players_cards.pop(7, None)
 
         players = sorted(list(players_cards.keys()))
-        y = 550
-        for i,p in enumerate(players):
-            x = 600 + 30*i
+        ypos = 550
+        for i, p in enumerate(players):
+            xpos = 600 + 30 * i
             #color all the circles their respective colors
             pygame.draw.circle(self.screen, self.colors[self.p2c[p]],
-                               (x,y), 14, 0)
-            label = self.font.render(str(players_cards[p]),1,self.colors['black'])
-            self.screen.blit(label,(x-12,y-6))
+                               (xpos, ypos), 14, 0)
+            label = self.font.render(str(players_cards[p]), 1, self.colors['black'])
+            self.screen.blit(label, (xpos - 12, ypos - 6))
 

@@ -10,6 +10,7 @@ class Human(BaseAgent):
     '''Allows for human users to play Risk RL'''
 
     def __init__(self):
+        super(Human, self).__init__()
         self.acodes={0:'Place 1 Troop during Recruitment\nOptions are territory IDs',
                      1:'Choose an attack to perform (From, To)\nFalse is for no attack',
                      2:'Continue Attack?',

@@ -9,4 +9,4 @@ by Christian Watts
 from .gui import GUI
 from .risk import Risk
 
-__all__ = ['GUI','Risk']
+__all__ = ['GUI', 'Risk']

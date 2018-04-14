@@ -74,17 +74,26 @@ def start_mg():
         SPMinigame(players, has_gui=gui, sleep_val=0).play()
     print('Done!',ui,'Minigames where played!')
 
-def sw_minigame():
+def sw_demo():
     players = [AggressiveAgent() for x in range(6)]
     env = SouthernWarfare(players, has_gui=True, turn_cap=1000)
     results = env.play()
     plot_results(results, env.players, env.gen_backup, 1)
 
+def sw_minigame():
+    players = [AggressiveAgent() for x in range(6)]
+    ui = int(input("How many games? "))
+    gui = int(input("With gui? 0/1 "))
+    for x in range(ui):
+        SouthernWarfare(players, has_gui=gui, verbose_gui=gui, turn_cap=1000).play()
+    print('Done!',ui,'Minigames where played!')
+
 #****************************************************************
 menu = {'1: Play Multiple Aggressive Games':multi_game,
         '2: Play Starting Positions Minigame':start_mg,
         '3: Play Southern Warfare Minigame':sw_minigame,
-        '4: Play full Risk demo':full_demo}
+        '4: Play full Risk demo':full_demo,
+        '5: Play SouthernWarfare Demo':sw_demo}
 
 stop = False
 while not stop:

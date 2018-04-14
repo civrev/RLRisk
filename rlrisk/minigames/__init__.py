@@ -10,4 +10,4 @@ from .pick_start_positions import SPMinigame
 from .southern_gui import SWGUI
 from .southern_warfare import SouthernWarfare
 
-__all__ = ['SPMinigame','SWGUI','SouthernWarfare']
+__all__ = ['SPMinigame', 'SWGUI', 'SouthernWarfare']
