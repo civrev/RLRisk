@@ -771,7 +771,7 @@ class Risk(object):
         """
 
         territories, cards, trade_ins = self.state
-        return np.array_equal(territories[:,0], np.repeat(territories[0,0],42))
+        return np.array_equal(territories[:,0], np.repeat(territories[0,0],len(self.board)))
                 
     def get_owned_territories(self, player):
         """
@@ -1024,9 +1024,9 @@ class Risk(object):
 
         territories, cards, trade_ins = self.state
 
-        remaining = list(range(42))
+        remaining = list(self.board.keys())
 
-        for index in range(42):
+        for index in range(len(self.board.keys())):
 
             turn = self.turn_order[index%len(self.turn_order)]
 
@@ -1108,7 +1108,7 @@ class Risk(object):
 
         continents = {
             "Europe":[23,24,25,26,27,28,29],
-            "N_America":[5,0,1,2,3,4,5,6,7,8],
+            "N_America":[0,1,2,3,4,5,6,7,8],
             "Africa":[14,18,13,15,16,17],
             "Australia":[19,20,21,22],
             "Asia":[30,31,32,33,34,35,36,37,38,39,40,41],
