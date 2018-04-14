@@ -48,6 +48,7 @@ The environment is located in the file risk.py and is implemented using the clas
     
     players = [BaseAgent() for x in range(3)]
     env = Risk.standard_game(players)
+    results = env.play()
 
 Agents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
