@@ -35,9 +35,7 @@ The Environment
 
 The environment is the standard Wolrd Domination game rules for Risk by Hasbro. You can find these rules here: https://www.hasbro.com/common/instruct/risk.pdf
 
-The environment is located in the file risk.py and is implemented using the class Risk(). The class is flexible enough to be initiallized with extremely custom rules, but for the most common game of Risk you can create a Risk object using only a list of players.
-
-.. code-block:: python
+The environment is located in the file risk.py and is implemented using the class Risk(). The class is flexible enough to be initiallized with extremely custom rules, but for the most common game of Risk you can create a Risk object using only a list of players.::
     from rlrisk.agents import BaseAgent
     from rlrisk.environment import Risk
     
