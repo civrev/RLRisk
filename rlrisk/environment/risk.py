@@ -20,7 +20,7 @@ class Risk(object):
 
         Required Parameters
         ----------
-        agents : List/Tuple 2 <= len(agents) <= 6
+        agents : List, 2 <= len(agents) <= 6
             List of agents that will be the players in the game. Agents must
             be BaseAgent or subclass of BaseAgent, or at least follow the general
             structure of that class
@@ -771,7 +771,7 @@ class Risk(object):
         """
 
         territories, cards, trade_ins = self.state
-        return np.array_equal(territories[:,0], np.repeat(territories[0,0],42))
+        return np.array_equal(territories[:,0], np.repeat(territories[0,0],len(self.board)))
                 
     def get_owned_territories(self, player):
         """
@@ -1024,23 +1024,23 @@ class Risk(object):
 
         territories, cards, trade_ins = self.state
 
-        remaining = list(range(42))
+        remaining = list(self.board.keys())
 
-        for index in range(42):
+        for index in range(len(self.board.keys())):
 
-            player_id = self.turn_order[index%len(self.turn_order)]
+            turn = self.turn_order[index%len(self.turn_order)]
 
             if self.deal:
                 chosen = random.choice(remaining)
             else:
-                chosen = self.players[turn].take_action(self.state, 9, valid)
+                chosen = self.players[turn].take_action(self.state, 9, remaining)
 
             remaining.remove(chosen)
 
-            territories[chosen][0]=player_id
+            territories[chosen][0]=turn
             territories[chosen][1]=1
 
-        self.state = (territories, cards, trade_ins)
+            self.state = (territories, cards, trade_ins)
 
 
     def gui_update(self, verbose=False):
@@ -1108,7 +1108,7 @@ class Risk(object):
 
         continents = {
             "Europe":[23,24,25,26,27,28,29],
-            "N_America":[5,0,1,2,3,4,5,6,7,8],
+            "N_America":[0,1,2,3,4,5,6,7,8],
             "Africa":[14,18,13,15,16,17],
             "Australia":[19,20,21,22],
             "Asia":[30,31,32,33,34,35,36,37,38,39,40,41],

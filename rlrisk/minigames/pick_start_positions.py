@@ -1,60 +1,89 @@
-import rlrisk as rlr
+from rlrisk.environment import Risk
+from rlrisk.agents import AggressiveAgent, BaseAgent
 import numpy as np
-import time 
+import time
+import random
 
-class PickStartGame(object):
-    '''A mini game for picking starting territories'''
-    
-    def __init__(self, agents, has_gui=True, verbose_gui=True):
-        '''sets up the minigame'''
-        self.players = agents
-        self.verbose_gui = verbose_gui
-        self.has_gui=has_gui
-        if has_gui:
-            self.gui = rlr.environment.gui.GUI()
-        self.board, self.continents, cf = rlr.environment.risk.Risk.gen_board()
-        #random turn order
-        self.turn_order = rlr.environment.config.turn_order(len(agents), clockwise = "r")
-        self.state = rlr.environment.risk.Risk.gen_init_state()
+class SPMinigame(Risk):
+    def __init__(self, agents, turn_order="c", has_gui=False,
+                 fortify_adjacent=True, sleep_val=0.5):
+        '''Block Comment here'''
+
+        remove = False
+        if not isinstance(agents, list):
+            agents = [agents, BaseAgent()]
+            remove = True
+        
+        super().__init__(agents,turn_order,has_gui=has_gui,
+                        fortify_adjacent=fortify_adjacent)
+
+        if remove:
+            self.players = self.players[:1]
+            self.turn_order = [0]
+
+        self.sleep_val = sleep_val
+            
 
     def play(self):
-        '''Begins the minigame'''
+        """
+        Allocates territories to players at game start
+
+        If rules are to randomly deal, assigns 1 troop to each player randomly
+        in a territory going by turn order. Otherwise allows players to
+        choose territories one by one
+
+        Parameters
+        ----------
+        None
         
+        Returns
+        -------
+        None
+
+        """
+        self.allocate_territories()
+        return np.array(self.record[0])
+
+    def allocate_territories(self):
+        """
+        Allocates territories to players at game start
+
+        If rules are to randomly deal, assigns 1 troop to each player randomly
+        in a territory going by turn order. Otherwise allows players to
+        choose territories one by one
+
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+
+        """
+
         territories, cards, trade_ins = self.state
 
-        turn_count = 0
-        record = np.empty([42,42], dtype='int32')
-        
-        
-        valid = list(range(42))
+        remaining = list(range(42))
+
         for index in range(42):
 
-            turn = self.turn_order[turn_count%len(self.players)]
-            
-            current_player = self.players[turn]
-            chosen = current_player.take_action(self.state, 9, valid)
+            turn = self.turn_order[index%len(self.turn_order)]
 
-            territories[chosen]=[turn,1]
+            chosen = self.players[turn].take_action(self.state, 9, remaining)
 
-            valid.remove(chosen)
+            remaining.remove(chosen)
 
-            turn_count+=1
+            territories[chosen][0]=turn
+            territories[chosen][1]=1
 
-            owners = np.empty([42,], dtype='int32')
-            for num in range(42):
-                owners[num]=territories[num][0]
-            record[index]=owners
-
-            #repack state
             self.state = (territories, cards, trade_ins)
+            self.record[0].append(np.copy(self.state[0][:,0]))
+
+            self.gui_update()
 
             if self.has_gui:
-                self.gui.recolor(self.state)
+                time.sleep(self.sleep_val)
 
-            if self.has_gui and self.verbose_gui:
-                time.sleep(0.5)
-
-        #at this point all provinces have been chosen
-        print('All positions have been chosen')
-        return record
-        
+        self.game_over=True
+        self.gui_update()

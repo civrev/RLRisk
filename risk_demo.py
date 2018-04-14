@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
-def plot_results(results, trade_gen, roll=20, lw=2):
+def plot_results(results, players, trade_gen, roll=20, lw=2):
     '''
     Plotting the results of a game into meaningful graphs
     '''
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     results = env.play()
 
     trade_gen = env.gen_backup
-    plot_results(results, trade_gen,5)
+    plot_results(results, players, trade_gen,5)

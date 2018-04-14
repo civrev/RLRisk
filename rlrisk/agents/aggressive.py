@@ -19,8 +19,11 @@ class AggressiveAgent(BaseAgent):
             random.choice(options[:-1])
 
         #always sent troops to borders
-        if action_code in [0,10,5]:
-            border_options = list(set(self.get_borders(state)).intersection(set(options)))
+        if action_code in [0,10,5,9]:
+            if action_code==9:
+                border_options = list(set(self.get_start_borders(state)).intersection(set(options)))
+            else:
+                border_options = list(set(self.get_borders(state)).intersection(set(options)))
             if len(border_options)!=0:
                 return random.choice(border_options)
 
@@ -49,5 +52,18 @@ class AggressiveAgent(BaseAgent):
                     break
 
         return borders
+
+    def get_start_borders(self, state):
+
+        territories, cards, trade_ins = state
                 
-        
+        owned = np.where(territories[:,0]==self.player)[0]
+
+        borders = []
+        for t in owned:
+            links = self.board[t]
+            for lt in links:
+                if territories[lt,0]==-1:
+                    borders.append(lt)
+
+        return borders
