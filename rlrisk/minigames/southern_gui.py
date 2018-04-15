@@ -5,6 +5,7 @@ This class is the GUI for the minigame southern warfare
 from rlrisk.environment import GUI, Risk
 
 class SWGUI(GUI):
+    """GUI That only displays S. America and Africa"""
 
     def __init__(self):
         super(SWGUI, self).__init__()
@@ -16,7 +17,7 @@ class SWGUI(GUI):
         for position in to_pop:
             self.positions.pop(position)
         fix = lambda x: x - 9
-        for key,value in self.positions.items():
+        for key, value in self.positions.items():
             self.positions[fix(key)] = value
             self.positions.pop(key, None)
 
@@ -27,4 +28,3 @@ class SWGUI(GUI):
         for position in self.positions:
             self.positions[position] = fix(self.positions[position])
         self.init_draw()
-        

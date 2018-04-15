@@ -602,21 +602,21 @@ class Risk(object):
 
         #emulate 6 sided dice
         a_rolls = []
-        for x in range(attacking_troops):
+        for roll in range(attacking_troops):
             a_rolls.append(random.randrange(1, 7))
 
         d_rolls = []
-        for x in range(defending_troops):
+        for roll in range(defending_troops):
             d_rolls.append(random.randrange(1, 7))
 
         #compare highest pairs
         for roll in range(min((len(d_rolls), len(a_rolls)))):
-            a = max(a_rolls)
-            d = max(d_rolls)
-            a_rolls.remove(a)
-            d_rolls.remove(d)
+            highest_a = max(a_rolls)
+            highest_d = max(d_rolls)
+            a_rolls.remove(highest_a)
+            d_rolls.remove(highest_d)
 
-            if a > d:
+            if highest_a > highest_d:
                 max_defend_troops -= 1
             else:
                 attacking_troops -= 1
@@ -687,19 +687,19 @@ class Risk(object):
 
         territories, cards, trade_ins = self.state
 
-        frm, to = attack
+        att_frm, att_to = attack
 
-        divy_up = territories[frm, 1]-1
-        territories[frm, 1] = 1
+        divy_up = territories[att_frm, 1]-1
+        territories[att_frm, 1] = 1
 
         for troop in range(divy_up):
             #repack state
             self.state = (territories, cards, trade_ins)
             choice = self.players[player].take_action(self.state, 7, attack)
-            if choice == to:
-                territories[to, 1] += 1
+            if choice == att_to:
+                territories[att_to, 1] += 1
             else:
-                territories[frm, 1] += 1
+                territories[att_frm, 1] += 1
             self.gui_update(True)
 
     def defeated(self, victim, conquerer):
@@ -925,25 +925,25 @@ class Risk(object):
             set_list.append([one[0],five[0],ten[0]])
 
         #wild card sets
-        for wc in wild:
+        for card in wild:
             if len(one) >= 2:
                 #two of ones
-                set_list.append([one[0], one[1], wc])
+                set_list.append([one[0], one[1], card])
             if len(five) >= 2:
                 #two of fives
-                set_list.append([five[0], five[1], wc])
+                set_list.append([five[0], five[1], card])
             if len(ten) >= 2:
                 #two of tens
-                set_list.append([ten[0], ten[1], wc])
+                set_list.append([ten[0], ten[1], card])
             if len(one) != 0 and len(five) != 0:
                 #one 1 and one 5
-                set_list.append([one[0], five[0], wc])
+                set_list.append([one[0], five[0], card])
             if len(one) != 0 and len(ten) != 0:
                 #one 1 and one 10
-                set_list.append([one[0], ten[0], wc])
+                set_list.append([one[0], ten[0], card])
             if len(ten) !=0 and len(five) != 0:
                 #one 5 and one 10
-                set_list.append([ten[0], five[0], wc])
+                set_list.append([ten[0], five[0], card])
 
         return (set_list, len(cards_owned))
 

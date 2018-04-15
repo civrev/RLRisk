@@ -10,4 +10,4 @@ from .base_agent import BaseAgent
 from .aggressive import AggressiveAgent
 from .human import Human
 
-__all__ = ['BaseAgent','AggressiveAgent','Human']
+__all__ = ['BaseAgent', 'AggressiveAgent', 'Human']

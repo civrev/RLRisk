@@ -5,21 +5,21 @@ from rlrisk.agents import BaseAgent
 class AggressiveAgent(BaseAgent):
 
     def take_action(self, state, action_code, options):
-        
+
         #always risk maximum troops during attack
         if action_code == 3:
             return options[-1]
 
-        #never retreat        
+        #never retreat
         if action_code == 2:
             return True
 
         #never pass on attack
-        if action_code in [1,11] and len(options)>1:
+        if action_code in [1, 11] and len(options) > 1:
             random.choice(options[:-1])
 
         #always sent troops to borders
-        if action_code in [0,10,5,9]:
+        if action_code in [0, 10, 5, 9]:
             if action_code == 9:
                 border_options = list(set(self.get_start_borders(state)).intersection(set(options)))
             else:
@@ -41,14 +41,14 @@ class AggressiveAgent(BaseAgent):
 
         territories = state[0]
 
-        owned = np.where(territories[:,0] == self.player)[0]
+        owned = np.where(territories[:, 0] == self.player)[0]
 
         borders = []
-        for t in owned:
-            links = self.board[t]
-            for lt in links:
-                if lt not in owned:
-                    borders.append(t)
+        for terr in owned:
+            links = self.board[terr]
+            for link in links:
+                if link not in owned:
+                    borders.append(terr)
                     break
 
         return borders
@@ -56,14 +56,14 @@ class AggressiveAgent(BaseAgent):
     def get_start_borders(self, state):
 
         territories = state[0]
-                
-        owned = np.where(territories[:,0] == self.player)[0]
+
+        owned = np.where(territories[:, 0] == self.player)[0]
 
         borders = []
-        for t in owned:
-            links = self.board[t]
-            for lt in links:
-                if territories[lt,0] == -1:
-                    borders.append(lt)
+        for terr in owned:
+            links = self.board[terr]
+            for link in links:
+                if territories[link, 0] == -1:
+                    borders.append(link)
 
         return borders

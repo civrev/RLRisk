@@ -5,7 +5,7 @@ import numpy as np
 
 class SPMinigame(Risk):
     '''Minigame for choosing initial territories before game start'''
-    
+
     def __init__(self, agents, turn_order="c", has_gui=False,
                  fortify_adjacent=True, sleep_val=0.5):
 
@@ -26,10 +26,10 @@ class SPMinigame(Risk):
     def play(self):
         """
 	Begin Game
-	
+
 	Just a formality compared to parent class.
 	Handles return objects and standardizes user interface
-	
+
 	Parameters
 	----------
 	None
@@ -46,10 +46,10 @@ class SPMinigame(Risk):
     def allocate_territories(self):
         """
         Players choose territories
-        
+
 	Players are prompted to choose from the remaining territories
 	one-by-one. When all territories are chosen the game terminates
-	
+
 	Parameters
 	----------
 	None

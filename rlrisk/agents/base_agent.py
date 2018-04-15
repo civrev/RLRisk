@@ -7,7 +7,7 @@ see it's sub-classes for actual functionality
 
 import random
 
-class BaseAgent:
+class BaseAgent(object):
     """A base agent for Risk"""
 
     def __init__(self):
@@ -19,28 +19,24 @@ class BaseAgent:
         self.defeated = None
 
     def pregame_setup(self, setup_values):
-        '''
-        Static information for the agent's reference that
-        are instatiated at the start of every game
-        '''
         #what player this agent is
         self.player = setup_values[0]
-        
+
         #the sequence from which card set trade in rewards are given
         self.trade_vals = setup_values[1]
-        
+
         #the order which players take turns
         self.turn_order = setup_values[2]
-        
+
         #whether or not you get the cards of another player upon their defeat
         self.steal_cards = setup_values[3]
-        
+
         #game board for reference
         self.board = setup_values[4]
-        
+
         #at game start player has not been defeated
         self.defeated = False
-        
+
 
     def take_action(self, state, action_code, options):
         '''
@@ -63,6 +59,6 @@ class BaseAgent:
         10 = place_initial_troops
         11 = after_attack_choose_another_attack
         '''
-        
+
         #random action
         return random.choice(options)
