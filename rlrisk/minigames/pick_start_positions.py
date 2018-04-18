@@ -80,8 +80,10 @@ class SPMinigame(Risk):
 
             self.gui_update()
 
-            if self.has_gui:
-                time.sleep(self.sleep_val)
-
         self.game_over = True
         self.gui_update()
+
+    def gui_update(self, verbose=False):
+        super(SPMinigame, self).gui_update(verbose)
+        if self.has_gui:
+            time.sleep(self.sleep_val)

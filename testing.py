@@ -78,7 +78,7 @@ def sw_demo():
     players = [AggressiveAgent() for x in range(6)]
     env = SouthernWarfare(players, has_gui=True, turn_cap=1000)
     results = env.play()
-    plot_results(results, env.players, env.gen_backup, 1)
+    plot_results(results, env.players, verbose_gui=True, has_gui=True, env.gen_backup, 1)
 
 def sw_minigame():
     players = [AggressiveAgent() for x in range(6)]

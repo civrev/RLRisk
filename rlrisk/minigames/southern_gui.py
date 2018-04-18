@@ -17,7 +17,7 @@ class SWGUI(GUI):
         for position in to_pop:
             self.positions.pop(position)
         fix = lambda x: x - 9
-        for key, value in self.positions.items():
+        for key, value in list(self.positions.items()):
             self.positions[fix(key)] = value
             self.positions.pop(key, None)
 

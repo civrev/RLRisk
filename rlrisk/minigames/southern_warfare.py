@@ -1,5 +1,6 @@
 from rlrisk.environment import Risk
 from rlrisk.minigames import SWGUI
+import time
 
 class SouthernWarfare(Risk):
     """A minigame that is the full Risk game just for S. America and Africa"""
@@ -13,6 +14,9 @@ class SouthernWarfare(Risk):
         self.restrict_board()
 
         self.state = self.gen_init_state(len(self.board))
+
+        self.sleep_val = kwargs.get('sleep_val', 0.5)
+            
 
     def restrict_board(self):
         """
@@ -47,6 +51,15 @@ class SouthernWarfare(Risk):
         fix = lambda x: x - 9
         for continent, provinces in self.continents.items():
             self.continents[continent] = [fix(terr) for terr in provinces]
-        for terr, links in self.board.items():
-            self.board[fix(terr)] = [fix(link) for link in links]
-            self.board.pop(terr, None)
+        bad_keys = list(self.board.keys())
+        good_keys = [fix(k) for k in bad_keys]
+
+        for index, key in enumerate(bad_keys):
+            self.board[good_keys[index]] = [fix(terr) for terr in self.board[key]]
+            self.board.pop(key, None)
+
+    def gui_update(self, verbose=False):
+        super(SouthernWarfare, self).gui_update(verbose)
+        
+        if self.has_gui and self.verbose_gui:
+            time.sleep(self.sleep_val)
