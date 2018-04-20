@@ -5,6 +5,7 @@ import sys
 import random
 import os
 import pygame
+from rlrisk.agents.position_minigame_agent import StartLearningAgent
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -61,7 +62,7 @@ def multi_game():
 
 def full_demo():
     players = [AggressiveAgent() for x in range(6)]
-    env = Risk(players, has_gui=True, turn_cap=1000)
+    env = Risk(players, has_gui=True, verbose_gui=True, turn_cap=1000)
     results = env.play()
     trade_gen = env.gen_backup
     plot_results(results, env.players, trade_gen, 5)
@@ -70,30 +71,42 @@ def start_mg():
     players = [AggressiveAgent() for x in range(6)]
     ui = int(input("How many games? "))
     gui = int(input("With gui? 0/1 "))
+    if gui>0:
+        sv = 0.5
     for x in range(ui):
-        SPMinigame(players, has_gui=gui, sleep_val=0).play()
+        SPMinigame(players, has_gui=gui, sleep_val=sv).play()
     print('Done!',ui,'Minigames where played!')
 
 def sw_demo():
     players = [AggressiveAgent() for x in range(6)]
-    env = SouthernWarfare(players, has_gui=True, turn_cap=1000)
+    env = SouthernWarfare(players, has_gui=True, verbose_gui=True, turn_cap=1000, sleep_val=0.03)
     results = env.play()
-    plot_results(results, env.players, verbose_gui=True, has_gui=True, env.gen_backup, 1)
+    plot_results(results, env.players, env.gen_backup, 1)
 
 def sw_minigame():
     players = [AggressiveAgent() for x in range(6)]
     ui = int(input("How many games? "))
     gui = int(input("With gui? 0/1 "))
     for x in range(ui):
-        SouthernWarfare(players, has_gui=gui, verbose_gui=gui, turn_cap=1000).play()
+        SouthernWarfare(players, has_gui=gui, turn_cap=1000).play()
     print('Done!',ui,'Minigames where played!')
+
+def nn_demo():
+    nnp = StartLearningAgent()
+    players = [nnp, AggressiveAgent()]
+    ui = int(input("How many games? "))
+    for x in range(ui):
+        env = SPMinigame(players, has_gui=True, sleep_val=0.02)
+        env.play()
+        nnp.update(env.state)
 
 #****************************************************************
 menu = {'1: Play Multiple Aggressive Games':multi_game,
         '2: Play Starting Positions Minigame':start_mg,
         '3: Play Southern Warfare Minigame':sw_minigame,
         '4: Play full Risk demo':full_demo,
-        '5: Play SouthernWarfare Demo':sw_demo}
+        '5: Play SouthernWarfare Demo':sw_demo,
+        '6: Play Starting Position Minigame with NN Agent':nn_demo}
 
 stop = False
 while not stop:

@@ -17,6 +17,8 @@ class BaseAgent(object):
         self.steal_cards = None
         self.board = None
         self.defeated = None
+        self.continents = None
+        self.continent_rewards = None
 
     def pregame_setup(self, setup_values):
         #what player this agent is
@@ -33,6 +35,12 @@ class BaseAgent(object):
 
         #game board for reference
         self.board = setup_values[4]
+
+        #the continents and what provinces are in them
+        self.continents = setup_values[5]
+
+        #the troop rewards for owning continents
+        self.continent_rewards = setup_values[6]
 
         #at game start player has not been defeated
         self.defeated = False
