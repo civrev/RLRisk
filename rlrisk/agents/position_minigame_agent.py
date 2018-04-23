@@ -15,7 +15,7 @@ import numpy as np
 
 class StartLearningAgent(BaseAgent):
 
-    def __init__(self, nodes=80, learning_rate=1):
+    def __init__(self, nodes=144, learning_rate=1, v_flag=True):
         super(StartLearningAgent, self).__init__()
 
         #Size of state array, for input layer of NN
@@ -23,6 +23,9 @@ class StartLearningAgent(BaseAgent):
 
         #42 territories to choose from
         self.output = 42
+
+        #verbose output from NN
+        self.v_flag = v_flag
 
         self.nodes = nodes
         self.alpha = learning_rate
@@ -74,17 +77,15 @@ class StartLearningAgent(BaseAgent):
         #average the predicted values for the actions
         #with the reward*learning rate
         
-        reward = self.calculate_fitness(state)*10
-        if reward > 0:
-            reward = 1 - (10/reward)
+        reward = self.calculate_fitness(state)
 
         self.move_history = [np.mean([y, reward], axis=0) for y in self.move_history]
 
         X = np.vstack(self.state_history)
         y = np.vstack(self.move_history)
 
-        self.model.fit(X, y, epochs=6, verbose=True)
-        
+        self.model.fit(X, y, epochs=6, verbose=self.v_flag)
+
         self.reset()
 
     def correct(self, state, valid):
@@ -106,6 +107,7 @@ class StartLearningAgent(BaseAgent):
         model = Sequential()
         model.add(Dense(self.nodes, activation='sigmoid', input_shape=(self.input,)))
         model.add(Dense(int(self.nodes*0.75), activation='sigmoid'))
+        model.add(Dense(int(self.nodes*0.5), activation='sigmoid'))
         model.add(Dense(self.output, activation='softmax'))
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -117,16 +119,19 @@ class StartLearningAgent(BaseAgent):
         '''
 
         fitness = 0
+
         
         territories_owned = np.where(state[0][:, 0] == self.player)[0]
 
-        for continent in self.continents:
-            c_owned = True
-            for territory in self.continents[continent]:
-                if territory not in territories_owned:
-                    c_owned = False
+        
 
-            if c_owned:
-                fitness += self.continent_rewards[continent]
+        for continent in self.continents:
+            reward = self.continent_rewards[continent]
+            size = len(self.continents[continent])
+            t_in_c_count = 0
+            for territory in self.continents[continent]:
+                if territory in territories_owned:
+                    t_in_c_count+=1
+            fitness += reward * (t_in_c_count/size)**4
 
         return fitness

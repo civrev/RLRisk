@@ -94,11 +94,19 @@ def sw_minigame():
 
 def nn_demo():
     nnp = StartLearningAgent()
-    players = [nnp, AggressiveAgent()]
+    players = [nnp, BaseAgent()]
     ui = int(input("How many games? "))
+    f_list = []
     for x in range(ui):
-        env = SPMinigame(players, has_gui=True, sleep_val=0.02)
+        if x % 100 == 5:
+            gui = True
+            print(x,'F Mean:',sum(f_list[-5:])/5)
+        else:
+            gui = False
+        nnp.v_flag=gui
+        env = SPMinigame(players, has_gui=gui, sleep_val=0.2)
         env.play()
+        f_list.append(nnp.calculate_fitness(env.state))
         nnp.update(env.state)
 
 #****************************************************************

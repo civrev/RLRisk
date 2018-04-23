@@ -115,7 +115,6 @@ class GUI(object):
     def quit_game(self):
         '''closes the pygame window'''
         pygame.display.quit()
-        pygame.quit()
 
     def gen_positions(self):
         '''returns a dictionary that matches ID to node positions in pygame'''
