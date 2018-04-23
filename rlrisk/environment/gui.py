@@ -50,32 +50,27 @@ class GUI(object):
             pygame.draw.circle(self.screen, self.colors["white"], (xpos, ypos), 14, 0)
         pygame.display.flip()
 
-    def loop_event(self, target_event_type):
-        '''
-        Loops through all the pygame events,
-        looks for a specific event, and garages the rest
-
-        so instead of running a continuous loop (like normal for pygame)
-        this loop is run on command as the game is static
-        '''
-
-        for event in pygame.event.get():
-
-            e = event
-            del event #clear the event log
-
-            if e.type == target_event_type:
-                return e
-
-            #exit on click
-            if e.type == pygame.QUIT:
-                self.quit_game()
-                return True
-
     def recolor(self, state):
-        '''
-        colors a circle representing a territory from a environment state
-        '''
+        """
+        Updates the display for the current state
+
+        Sets the color of each territory to the player color of the
+        current owner and displays the number of troops present in each
+        territory. Also shows the number of cards in each player's hand
+        and the player color.
+
+        Required Parameters
+        -------------------
+        State : 3 value tuple
+            (2, 42) Numpy Array representing each territory owner and troop count
+            (44,)   Numpy Array representing status of each card
+            integer representing the number of card set trade-ins so far
+            
+        Returns
+        -------
+        None
+
+        """
 
         #not interested in events
         pygame.event.clear()
@@ -113,11 +108,40 @@ class GUI(object):
 
 
     def quit_game(self):
-        '''closes the pygame window'''
+        """
+        Quits the GUI
+
+        Closes the Pygame display
+
+        Parameters
+        -------------------
+        None
+            
+        Returns
+        -------
+        None
+
+        """
         pygame.display.quit()
 
     def gen_positions(self):
-        '''returns a dictionary that matches ID to node positions in pygame'''
+        """
+        Get X, Y coordinates on screen
+
+        Maps Territory ID to the position to display data on screen
+        for that territory
+
+        Parameters
+        -------------------
+        None
+            
+        Returns
+        -------
+        Dictionary
+            A dictionary with territory ID as the key and
+            the X, Y position on screen for that territory
+
+        """
 
         positions = [
             (80, 120), (220, 140), (440, 100), (180, 180), (240, 200),
@@ -139,7 +163,22 @@ class GUI(object):
 
     @staticmethod
     def gen_colors():
-        '''returns a dictionary of RGB colors to be used in pygame'''
+        """
+        Maps colors to RGB values
+
+        Creates a dictionary that maps the name of colors to their RBG values
+
+        Parameters
+        -------------------
+        None
+            
+        Returns
+        -------
+        Dictionary
+            A dictionary with color name as the key and
+            the RBG values of that color
+
+        """
 
         colors = {
             "red":(255, 0, 0),
@@ -156,7 +195,25 @@ class GUI(object):
 
     @staticmethod
     def player_colors():
-        '''assigned players colors in pygame'''
+        """
+        Records what player is what color
+
+        Creates a dictionary that maps player index to a color
+
+        Required Parameters
+        -------------------
+        State : 3 value tuple
+            (2, 42) Numpy Array representing each territory owner and troop count
+            (44,)   Numpy Array representing status of each card
+            integer representing the number of card set trade-ins so far
+            
+        Returns
+        -------
+        Dictionary
+            A dictionary with player number as the key (and -1 for unowned) and
+            a color to display for them
+
+        """
 
         p2c = {-1:'white',
                0:"red",
@@ -170,8 +227,27 @@ class GUI(object):
 
 
     def draw_players(self, state):
-        '''draws the players and # cards in their hands'''
+        """
+        Draws the player colors and card counts to display
+
+        Counts the number of cards each player has, and puts them in
+        a circle with player color on screen. Also displays total number
+        of card trade ins so far
+
+        Required Parameters
+        -------------------
+        State : 3 value tuple
+            (2, 42) Numpy Array representing each territory owner and troop count
+            (44,)   Numpy Array representing status of each card
+            integer representing the number of card set trade-ins so far
+            
+        Returns
+        -------
+        None
+
+        """
         cards = state[1]
+        trade_ins = state[2]
 
         players_cards = {}
         for num in range(8):
@@ -183,8 +259,13 @@ class GUI(object):
 
         players = sorted(list(players_cards.keys()))
         ypos = 550
+        orig_x = 600
+
+        label = self.font.render(str(trade_ins), 1, self.colors['black'])
+        self.screen.blit(label, (xpos, ypos - 30))
+        
         for i, p in enumerate(players):
-            xpos = 600 + 30 * i
+            xpos = orig_x + 30 * i
             #color all the circles their respective colors
             pygame.draw.circle(self.screen, self.colors[self.p2c[p]],
                                (xpos, ypos), 14, 0)
