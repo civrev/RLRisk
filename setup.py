@@ -14,6 +14,7 @@ setup(
                 'rlrisk.minigames',
                 'rlrisk.environment'],
     package_data={'rlrisk': ['environment/*.bmp','*.txt','*.rst']},
+    python_requires='~=3.3',
     install_requires = [
         'numpy>=1.14.1',
         'pygame>=1.9.3']

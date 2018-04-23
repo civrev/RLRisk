@@ -83,8 +83,7 @@ class StartLearningAgent(BaseAgent):
         X = np.vstack(self.state_history)
         y = np.vstack(self.move_history)
 
-        monitor = EarlyStopping(patience=2)
-        self.model.fit(X, y, epochs=6, callbacks=[monitor], verbose=True)
+        self.model.fit(X, y, epochs=6, verbose=True)
         
         self.reset()
 

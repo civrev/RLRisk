@@ -71,8 +71,9 @@ def start_mg():
     players = [AggressiveAgent() for x in range(6)]
     ui = int(input("How many games? "))
     gui = int(input("With gui? 0/1 "))
+    sv=0
     if gui>0:
-        sv = 0.5
+        sv = 0.2
     for x in range(ui):
         SPMinigame(players, has_gui=gui, sleep_val=sv).play()
     print('Done!',ui,'Minigames where played!')
