@@ -12,14 +12,15 @@ from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping
 import numpy as np
+import random
 
 class StartLearningAgent(BaseAgent):
 
-    def __init__(self, nodes=144, learning_rate=1, v_flag=True):
+    def __init__(self, nodes=100, learning_rate=1, v_flag=True, epsilon=0.1):
         super(StartLearningAgent, self).__init__()
 
         #Size of state array, for input layer of NN
-        self.input = 42+42+44+1
+        self.input = 42
 
         #42 territories to choose from
         self.output = 42
@@ -27,11 +28,19 @@ class StartLearningAgent(BaseAgent):
         #verbose output from NN
         self.v_flag = v_flag
 
+        #for epsilon greedy
+        self.epsilon = epsilon
+
         self.nodes = nodes
         self.alpha = learning_rate
         self.model = self.create_nn()
         self.state_history = []
         self.move_history = []
+
+        self.prev_reward = 0
+        self.reward = 0
+
+        self.correct_count = 0
 
     def take_action(self, state, action_code, options):
 
@@ -40,7 +49,7 @@ class StartLearningAgent(BaseAgent):
         #skip learning
         if action_code == 9:
             
-            state = np.array([np.append(state[0].flatten(), np.append(state[1],[state[2]]))])
+            state = np.array([state[0][:,0]])
             
 
             #get the predictions on values of each potential state
@@ -53,6 +62,7 @@ class StartLearningAgent(BaseAgent):
             #if it chose an invalid option, train it until it learns
             #the rules
             while max_action not in options:
+
                 #handles the training
                 self.correct(state, options)
 
@@ -60,10 +70,19 @@ class StartLearningAgent(BaseAgent):
                 actions = self.model.predict(state)
                 max_action = np.argmax(actions)
 
-            #record the state and move that was made
-            self.state_history.append(state)
-            self.move_history.append(actions)
+            if random.random() < self.epsilon:
+                max_action = random.choice(options)
 
+            #record the state
+            self.state_history.append(state)
+
+            #record move after collecting reward
+            self.reward = self.calculate_fitness(state) - self.prev_reward
+            actions[0,max_action] = (actions[0,max_action]+self.reward)/2
+            self.prev_reward = self.reward
+
+            self.move_history.append(actions)
+            
             return max_action
 
         else:
@@ -72,21 +91,16 @@ class StartLearningAgent(BaseAgent):
     def reset(self):
         self.state_history = []
         self.move_history = []
+        self.prev_reward = 0
 
-    def update(self, state):
+    def update(self):
         #average the predicted values for the actions
         #with the reward*learning rate
         
-        reward = self.calculate_fitness(state)
-
-        self.move_history = [np.mean([y, reward], axis=0) for y in self.move_history]
-
         X = np.vstack(self.state_history)
         y = np.vstack(self.move_history)
 
         self.model.fit(X, y, epochs=6, verbose=self.v_flag)
-
-        self.reset()
 
     def correct(self, state, valid):
         '''
@@ -95,21 +109,21 @@ class StartLearningAgent(BaseAgent):
         layer = np.array([[0]*self.output])
         for pos in valid:
             layer[0, pos] = 1
-        self.model.fit(state, layer, verbose=False)
-        
+        self.model.fit(state, layer, epochs=1, verbose=False)
+
+        self.correct_count+=1
 
     def create_nn(self):
         '''
         Builds a neural network
         '''
 
-        #build model
         model = Sequential()
-        model.add(Dense(self.nodes, activation='sigmoid', input_shape=(self.input,)))
-        model.add(Dense(int(self.nodes*0.75), activation='sigmoid'))
-        model.add(Dense(int(self.nodes*0.5), activation='sigmoid'))
-        model.add(Dense(self.output, activation='softmax'))
-        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.add(Dense(int(self.nodes*1), activation='sigmoid', input_shape=(self.input,)))
+        model.add(Dense(int(self.nodes*0.8), activation='sigmoid'))
+        model.add(Dense(int(self.nodes*0.7), activation='sigmoid'))
+        model.add(Dense(self.output, activation='sigmoid'))
+        model.compile(optimizer='adam', loss='mean_absolute_percentage_error', metrics=['accuracy'])
 
         return model
 
@@ -120,18 +134,11 @@ class StartLearningAgent(BaseAgent):
 
         fitness = 0
 
-        
-        territories_owned = np.where(state[0][:, 0] == self.player)[0]
-
-        
-
-        for continent in self.continents:
-            reward = self.continent_rewards[continent]
-            size = len(self.continents[continent])
-            t_in_c_count = 0
-            for territory in self.continents[continent]:
-                if territory in territories_owned:
-                    t_in_c_count+=1
-            fitness += reward * (t_in_c_count/size)**4
+        for continent,provinces in self.continents.items():
+            con_reward = self.continent_rewards[continent]
+            continent_owners = state[0,provinces]
+            owned_in_continent = continent_owners[continent_owners == self.player]
+            fraction_owned = len(owned_in_continent)/len(provinces)
+            fitness += con_reward * (fraction_owned**3)
 
         return fitness

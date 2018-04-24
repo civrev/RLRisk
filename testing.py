@@ -9,6 +9,7 @@ from rlrisk.agents.position_minigame_agent import StartLearningAgent
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import keras
 from rlrisk.environment import *
 from rlrisk.agents import *
 from rlrisk.minigames import *
@@ -94,20 +95,29 @@ def sw_minigame():
 
 def nn_demo():
     nnp = StartLearningAgent()
-    players = [nnp, BaseAgent()]
+    try:
+        nnp.model = keras.models.load_model('101_turns.h5')
+    except:
+        print("model not loaded")
+    players = [nnp]+[BaseAgent()]#+[AggressiveAgent()]
     ui = int(input("How many games? "))
     f_list = []
     for x in range(ui):
-        if x % 100 == 5:
+        if x % 500 == 0:
             gui = True
             print(x,'F Mean:',sum(f_list[-5:])/5)
+            nnp.epsilon = 0
         else:
             gui = False
+            nnp.epsilon = 0.05
         nnp.v_flag=gui
         env = SPMinigame(players, has_gui=gui, sleep_val=0.2)
         env.play()
-        f_list.append(nnp.calculate_fitness(env.state))
-        nnp.update(env.state)
+        f_list.append(nnp.prev_reward)
+        nnp.update()
+        nnp.reset()
+    
+    nnp.model.save(str(ui)+'_turns.h5')
 
 #****************************************************************
 menu = {'1: Play Multiple Aggressive Games':multi_game,

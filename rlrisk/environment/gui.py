@@ -262,7 +262,7 @@ class GUI(object):
         orig_x = 600
 
         label = self.font.render(str(trade_ins), 1, self.colors['black'])
-        self.screen.blit(label, (xpos, ypos - 30))
+        self.screen.blit(label, (orig_x, ypos - 30))
         
         for i, p in enumerate(players):
             xpos = orig_x + 30 * i
