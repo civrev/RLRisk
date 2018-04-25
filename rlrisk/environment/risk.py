@@ -130,7 +130,7 @@ class Risk(object):
             self.gui = GUI()
 
         for plr_num, player in enumerate(agents):
-            setup_values = [plr_num, itertools.tee(self.orig_trade_vals, n=1),
+            setup_values = [plr_num, itertools.tee(self.orig_trade_vals, 1),
                             turn_order, steal_cards, self.board,
                             self.continents, self.con_rewards]
             player.pregame_setup(setup_values)

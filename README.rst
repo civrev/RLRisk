@@ -17,7 +17,13 @@ Dependencies
 User installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install this package, clone the repository to your local computer
+The easiest way to install this package is through PyPi
+
+::
+    pip install rlrisk
+
+Otherwise you can manually install this package by cloning
+the repository to your local computer
 
 ::
 

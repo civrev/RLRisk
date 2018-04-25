@@ -63,7 +63,7 @@ def multi_game():
 
 def full_demo():
     players = [AggressiveAgent() for x in range(6)]
-    env = Risk(players, has_gui=True, verbose_gui=True, turn_cap=1000)
+    env = Risk(players, has_gui=True)
     results = env.play()
     trade_gen = env.gen_backup
     plot_results(results, env.players, trade_gen, 5)
