@@ -1,7 +1,6 @@
 '''
-This class is the gui for the game
-it can be used by setting the GUI flag when
-creating a Risk object
+This module holds the class for which the gui for the game is made
+it can be used by setting the GUI flag when creating a Risk object
 '''
 
 import pygame
@@ -9,11 +8,11 @@ import os
 
 class GUI(object):
     '''
-    The GUI for the game, which is optional, and functions
-    related to the GUI
+    The GUI for the game, which is optional, and functions related to the GUI
     '''
 
     def __init__(self):
+        """Loading the images and setting fonts and defaults"""
         self.colors = self.gen_colors()
         self.p2c = self.player_colors()
 
@@ -42,7 +41,21 @@ class GUI(object):
 
 
     def init_draw(self):
-        '''Draws the initial screen'''
+        """
+        Displays the pregame-start screen
+
+        Sets up the pygame display, draws the background,
+        and empty positions (as white).
+
+        Parameters
+        -------------------
+        None
+            
+        Returns
+        -------
+        None
+
+        """
         self.size = self.background.get_size() #duplicate on purpose, for subclasses
         self.screen = pygame.display.set_mode(self.size)
         self.screen.blit(self.background, self.background_rect)
@@ -104,8 +117,6 @@ class GUI(object):
         self.draw_players(state)
 
         pygame.display.flip()
-
-
 
     def quit_game(self):
         """
@@ -225,14 +236,13 @@ class GUI(object):
 
         return p2c
 
-
     def draw_players(self, state):
         """
         Draws the player colors and card counts to display
 
         Counts the number of cards each player has, and puts them in
         a circle with player color on screen. Also displays total number
-        of card trade ins so far
+        of card trade ins so far.
 
         Required Parameters
         -------------------
@@ -261,7 +271,7 @@ class GUI(object):
         ypos = 550
         orig_x = 600
 
-        label = self.font.render(str(trade_ins), 1, self.colors['black'])
+        label = self.font.render("Trade ins: " + str(trade_ins), 1, self.colors['black'])
         self.screen.blit(label, (orig_x, ypos - 30))
         
         for i, p in enumerate(players):

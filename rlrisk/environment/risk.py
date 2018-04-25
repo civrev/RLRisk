@@ -1,3 +1,9 @@
+'''
+This module holds the Risk Class which is the
+framework from which game environment objects can
+be created
+'''
+
 import random
 import itertools
 import math
@@ -124,8 +130,9 @@ class Risk(object):
             self.gui = GUI()
 
         for plr_num, player in enumerate(agents):
-            setup_values = [plr_num, trade_vals, turn_order, steal_cards,
-                            self.board, self.continents, self.con_rewards]
+            setup_values = [plr_num, itertools.tee(self.orig_trade_vals, n=1),
+                            turn_order, steal_cards, self.board,
+                            self.continents, self.con_rewards]
             player.pregame_setup(setup_values)
         
     def play(self):

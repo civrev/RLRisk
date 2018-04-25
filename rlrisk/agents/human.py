@@ -1,6 +1,6 @@
 '''
-This is a subclass of BaseAgent()
-it is the object used when a human
+This module holds a subclass of BaseAgent()
+it is the class used when a human
 wants to be a player in the game
 '''
 
@@ -10,6 +10,8 @@ class Human(BaseAgent):
     '''Allows for human users to play Risk RL'''
 
     def __init__(self):
+        """Adds a dictionary to use for prompting user by action code"""
+        
         super(Human, self).__init__()
         self.acodes = {0:'Place 1 Troop during Recruitment\nOptions are territory IDs',
                        1:'Choose an attack to perform (From, To)\nFalse is for no attack',
@@ -25,6 +27,8 @@ class Human(BaseAgent):
                        11:'Choose which attack to follow up successful attack with\nFalse for no attack'}
 
     def take_action(self, state, action_code, options):
+        """Enumerates options to user and validates input to choose an option"""
+        
         print(self.acodes[action_code])
         for index, option in enumerate(options):
             print(index, 'is for option', option)

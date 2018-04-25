@@ -6,6 +6,7 @@ class SouthernWarfare(Risk):
     """A minigame that is the full Risk game just for S. America and Africa"""
 
     def __init__(self, *args, **kwargs):
+        """Constructor for SouthernWarfare that restricts the environment"""
 
         self.sleep_val = kwargs.pop('sleep_val', 0.5)
         
@@ -17,7 +18,6 @@ class SouthernWarfare(Risk):
         self.restrict_board()
 
         self.state = self.gen_init_state(len(self.board))
-            
 
     def restrict_board(self):
         """

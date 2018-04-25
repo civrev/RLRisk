@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'rlrisk',
-    version = '0.9.5.8',
+    version = '0.9.6.0',
     description = 'A reinforcement learning environment based off the board game Risk',
     long_description = open('README.rst').read(),
     author = 'Christian Watts',

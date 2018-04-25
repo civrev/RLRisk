@@ -1,9 +1,17 @@
 '''
-A reinforcement learning environment based off the board game Risk
+rlrisk.environment
+==================
 
-https://github.com/civrev/RLRisk
+Available Modules
+-----------------
+config
+    Functions for configuring game settings
 
-by Christian Watts
+gui
+    GUI for observing game environment
+
+risk
+    Environment for Risk board game
 '''
 
 from .gui import GUI

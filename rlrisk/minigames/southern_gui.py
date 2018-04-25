@@ -8,6 +8,7 @@ class SWGUI(GUI):
     """GUI That only displays S. America and Africa"""
 
     def __init__(self):
+        """Constructor for GUI but with un-needed area removed"""
         super(SWGUI, self).__init__()
 
         #filter out stuff we don't use in this minigame

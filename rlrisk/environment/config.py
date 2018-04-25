@@ -1,21 +1,31 @@
 '''
-This file contains useful functions
+This moduel contains useful functions
 for the configuration of the game in either
 GUI or headless modes
 '''
 
 import random
 
-def get_turn_order(players, clockwise = ""):
+def get_turn_order(players, order_setting="c"):
     '''
-    user chooses what method to generate turn order
+    Generate what order players take their turns
 
-    clockwise arg is for the GUI. The default is ""
-    which signals that the user needs to input from console
-    
-    "c" = Clockwise: Actually is clockwise from random first player
-    "r" = Highest Roll: Players are assigned turns randomly
-    "i" = Input Order: User declares order manually
+    Produces a list of player order based on a given setting
+    and number of players
+
+    Optional Parameters
+    -------------------
+    order_setting : "c","r", or "i"
+        "c" = Clockwise: Actually is clockwise from random first player
+        "r" = Highest Roll: Players are assigned turns randomly
+        "i" = Input Order: User declares order manually
+
+        "c" by default as per Risk World Domination stadard ruleset
+
+    Returns
+    -------
+    list : player indices placed sequencially representing the order in which
+        they take their turns
     '''
     p_list = list(range(players))
     op_list = list(p_list)
@@ -24,15 +34,15 @@ def get_turn_order(players, clockwise = ""):
 
     #the GUI will handle setting selections
     #without console input
-    if len(clockwise) == 0:
-        clockwise = input("Clockwise, highest roll, or input order? c/r/i ")
+    if len(order_setting) == 0:
+        order_setting = input("Clockwise, highest roll, or input order? c/r/i ")
         
-    if clockwise.lower() == "c":
+    if order_setting.lower() == "c":
             
         first = random.choice(p_list)
         order = [player if player<=players - 1 else p_list[player-players] for player in range(first, players + first)]
             
-    elif clockwise.lower() == "r":
+    elif order_setting.lower() == "r":
 
         for player in range(players):
             chosen = random.choice(p_list)
@@ -51,6 +61,7 @@ def get_turn_order(players, clockwise = ""):
     return order
 
 def standard_trade_gen():
+    """Generator for standard ruleset trade in rewards"""
     for x in  [4,6,8,10,15]:
         yield x
     num = 15
@@ -59,27 +70,35 @@ def standard_trade_gen():
         yield num
 
 def by_one_gen():
-    num = 0
+    """Generator for trade in rewards starting at 3 and increasing by 1"""
+    num = 2
     while True:
         num+=1
         yield num
 
-def get_trade_vals(choice = ""):
+def get_trade_vals(setting="s"):
     '''
-    user chooses setting for card set trade in values
-    NOTE: not needed for the GUI
+    Generate what trade in values are to be used during a game
+
+    Produces a list of player order based on a given setting
+    and number of players
+
+    Optional Parameters
+    -------------------
+    setting : "s", or "1" (letter one)
+        "s" = standard ruleset trade in rewards
+        "1" = trade in rewards starting at 3 and increasing by 1
+
+        "s" by default as per Risk World Domination stadard ruleset
+
+    Returns
+    -------
+    generator : Sequence from which to yeild player rewards
     '''
 
-    prompt = ("What do you want card trade in values to be?\n" +
-        "Standard 4,6,8,10,15,...,60?\nBy one 4,5,6,etc?\nCustom values?\n" +
-        "s/1/c: ")
-
-    if len(choice)==0:
-        choice = input(prompt)
-
-    if choice == "s":
+    if setting == "s":
         values = standard_trade_gen()
-    elif choice == "1":
+    elif setting == "1":
         values = by_one_gen()
         
     return values

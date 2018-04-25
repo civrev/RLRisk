@@ -1,7 +1,18 @@
 '''
+RLRisk
+======
+
 A reinforcement learning environment based off the board game Risk
 
-https://github.com/civrev/RLRisk
+Available Subpackages
+---------------------
+agents
+    Agents that interact with the environment
 
-by Christian Watts
+environment
+    Core game environment and GUI
+
+minigames
+    Smaller versions of the full game that focus on
+    specific aspects of gameplay and learning
 '''
