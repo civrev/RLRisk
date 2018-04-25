@@ -50,11 +50,11 @@ The environment is located in the file risk.py and is implemented using the clas
 
 ::
 
-    from rlrisk.agents import BaseAgent
-    from rlrisk.environment import Risk
+    from rlrisk.agents import *
+    from rlrisk.environment import *
     
-    players = [BaseAgent() for x in range(3)]
-    env = Risk.standard_game(players)
+    players = [BaseAgent(), AggressiveAgent()]
+    env = Risk(players)
     results = env.play()
 
 Agents
