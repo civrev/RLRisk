@@ -98,7 +98,7 @@ class Risk(object):
             raise ValueError("Invalid size for agents. Must be 2<=len(agents)<=6")
 
         self.players = agents
-        
+
         if isinstance(turn_order, str):
             self.turn_order = config.get_turn_order(len(agents), turn_order)
         else:
@@ -134,19 +134,19 @@ class Risk(object):
                             turn_order, steal_cards, self.board,
                             self.continents, self.con_rewards]
             player.pregame_setup(setup_values)
-        
+
     def play(self):
         """
         Play the game
 
         Begins the game with the rules and variations set forth during
         instantiation. Games start with territory allotment, and then
-        proceed to the main portion of the game, turn taking. 
+        proceed to the main portion of the game, turn taking.
 
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         6 value tuple
@@ -211,7 +211,7 @@ class Risk(object):
             print("The game is over! Turn Cap was reached.")
         else:
             winner = self.turn_order[self.turn_count%num_players] + 1
-            print("The game is over! Player",winner,"won the game!")
+            print("The game is over! Player", winner, "won the game!")
 
         #quit gui
         self.gui_update()
@@ -235,7 +235,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         None
@@ -244,10 +244,10 @@ class Risk(object):
 
         recruited = self.calculate_recruits(player)
 
-        self.place_troops(player,recruited)
+        self.place_troops(player, recruited)
 
         #gets card sets, if they have card sets ask the player if they want to trade
-        set_list,card_count = self.get_sets(player)
+        set_list, card_count = self.get_sets(player)
         if len(set_list) != 0:
             recruited = self.trade_in(player, set_list, card_count)
             #zero is they chose not to trade in a set
@@ -261,14 +261,14 @@ class Risk(object):
         Collects the IDs of valid territories to attack from, and where they
         can attack to. Prompts the user for a choice of attack, or not. If
         they choose an attack, attack (conduct combat).
-        
+
         If the outcome is victory, reassign territories, prompt player to move
         troops from attacking territory to defeated territory, and then if there are
         enough troops in the new territory, ask if they want to make another
         attack from that territory.
-        
+
         If the outcome is defeat, no further action will be taken.
-        
+
         If the outcome is not yet decided, prompt the player for an oppertunity
         to cancel the attack
 
@@ -276,7 +276,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         None
@@ -291,9 +291,9 @@ class Risk(object):
         card_eligible = True
 
         while choice != False:
-            
-            defending_player = territories[choice[1],0]
-            
+
+            defending_player = territories[choice[1], 0]
+
             #-1 is defeat, 1 is victory, 0 is undecided
             result = self.combat(choice)
 
@@ -310,7 +310,7 @@ class Risk(object):
                     self.reward_card(player)
                     card_eligible = False
 
-                self.after_attack_reinforce(player,choice)
+                self.after_attack_reinforce(player, choice)
 
                 #check if this defeated the other player
                 self.defeated(defending_player, player)
@@ -345,7 +345,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         None
@@ -361,7 +361,7 @@ class Risk(object):
 
         if source != False:
             if self.fortify_adjacent:
-                valid_destinations = np.intersect1d(owned,self.board[source])
+                valid_destinations = np.intersect1d(owned, self.board[source])
             else:
                 valid_destinations = self.map_connected_territories(source, owned)
 
@@ -387,15 +387,15 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         None
 
         """
 
-        self.record[0].append(np.copy(self.state[0][:,0]))
-        self.record[1].append(np.copy(self.state[0][:,1]))
+        self.record[0].append(np.copy(self.state[0][:, 0]))
+        self.record[1].append(np.copy(self.state[0][:, 1]))
         self.record[2].append(np.copy(self.state[1]))
         self.record[3].append(self.state[2])
 
@@ -410,7 +410,7 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         None
@@ -431,7 +431,6 @@ class Risk(object):
                     troops_to_place.pop(player_index)
                     if len(troops_to_place) == 0:
                         break
-            
 
     def fortify(self, player, source, destination):
         """
@@ -451,7 +450,7 @@ class Risk(object):
 
         destination : integer
             Territory ID of where troops are transfering to
-        
+
         Returns
         -------
         None
@@ -469,7 +468,7 @@ class Risk(object):
 
             choice = self.players[player].take_action(self.state, 6, (source, destination))
 
-            if choice==destination:
+            if choice == destination:
                 territories[destination][1] += 1
             else:
                 territories[source][1] += 1
@@ -492,28 +491,27 @@ class Risk(object):
         owned : List
             List of territory IDs owned by same player as source
 
-        
         Returns
         -------
         List :
             List of Territories ID that are part of contiguous owned territory
 
         """
-        
+
         contiguous = [source]
 
         index = 0
         while True:
-            for t in self.board[contiguous[index]]:
-                if t in owned and t not in contiguous:
-                    contiguous.append(t)
+            for terr in self.board[contiguous[index]]:
+                if terr in owned and terr not in contiguous:
+                    contiguous.append(terr)
             index += 1
             if index >= len(contiguous):
                 break
 
         return contiguous
 
-    def get_targets(self, player, frm = -1):
+    def get_targets(self, player, frm=-1):
         """
         Generates all valid attack options for a player
 
@@ -530,7 +528,7 @@ class Risk(object):
         frm : integer
             The territory ID of finding valid targets of attacks launched
             from a single territory
-        
+
         Returns
         -------
         List of 2 value tuples :
@@ -551,11 +549,11 @@ class Risk(object):
             valid_from = [frm]
 
         attacks = []
-        for vf in valid_from:
-            links = set(self.board[vf])
+        for vf_terr in valid_from:
+            links = set(self.board[vf_terr])
             valid_to = links - set(owned)
-            for vt in valid_to:
-                attacks.append((vf, vt))
+            for vt_terr in valid_to:
+                attacks.append((vf_terr, vt_terr))
 
         attacks.append(False)
 
@@ -582,7 +580,7 @@ class Risk(object):
         -------------------
         attack : 2 integer tuple
             The territory IDs of (attacking_from, attacking_to)
-        
+
         Returns
         -------
         integer :
@@ -658,7 +656,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players to recieve a card
-        
+
         Returns
         -------
         None
@@ -686,7 +684,7 @@ class Risk(object):
 
         attack : 2 integer tuple
             The territory IDs of (attacking_from, attacking_to)
-        
+
         Returns
         -------
         None
@@ -730,7 +728,7 @@ class Risk(object):
 
         conquerer : integer
             The index of the agent that defeated them in self.players
-        
+
         Returns
         -------
         None
@@ -749,7 +747,7 @@ class Risk(object):
 
             #repack state
             self.state = (territories, cards, trade_ins)
-            
+
             set_list, cards_owned = self.get_sets(conquerer)
             first_trade = True
             while (first_trade and cards_owned > 5) or (not first_trade and cards_owned > 4):
@@ -768,7 +766,7 @@ class Risk(object):
         Required Parameters
         -------------------
         None
-        
+
         Returns
         -------
         boolean :
@@ -778,7 +776,7 @@ class Risk(object):
 
         territories = self.state[0]
         return np.array_equal(territories[:, 0], np.repeat(territories[0, 0], len(self.board)))
-                
+
     def get_owned_territories(self, player):
         """
         Finds all territories owned by the player
@@ -787,7 +785,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         (?,) Numpy Array:
@@ -808,7 +806,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         integer :
@@ -858,7 +856,7 @@ class Risk(object):
             to perform.
 
             0 by default
-        
+
         Returns
         -------
         None
@@ -889,7 +887,7 @@ class Risk(object):
         -------------------
         player : integer
             The index of the agent in self.players
-        
+
         Returns
         -------
         List of Lists:
@@ -902,7 +900,7 @@ class Risk(object):
 
         cards = self.state[1]
 
-        cards_owned = np.where(cards==player)[0]
+        cards_owned = np.where(cards == player)[0]
 
         one = []
         five = []
@@ -930,7 +928,7 @@ class Risk(object):
 
         #one of each kind
         if len(one) >= 1 and len(five) >= 1 and len(ten) >= 1:
-            set_list.append([one[0],five[0],ten[0]])
+            set_list.append([one[0], five[0], ten[0]])
 
         #wild card sets
         for card in wild:
@@ -949,7 +947,7 @@ class Risk(object):
             if len(one) != 0 and len(ten) != 0:
                 #one 1 and one 10
                 set_list.append([one[0], ten[0], card])
-            if len(ten) !=0 and len(five) != 0:
+            if len(ten) != 0 and len(five) != 0:
                 #one 5 and one 10
                 set_list.append([ten[0], five[0], card])
 
@@ -973,7 +971,7 @@ class Risk(object):
 
         card_count : integer
             The number of cards owned by the player
-        
+
         Returns
         -------
         integer :
@@ -1005,9 +1003,6 @@ class Risk(object):
             self.state = (territories, cards, trade_ins)
 
         return troops_awarded
-            
-            
-        
 
     def allocate_territories(self):
         """
@@ -1020,7 +1015,7 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         None
@@ -1060,7 +1055,7 @@ class Risk(object):
         -------------------
         verbose : boolean
             Whether or not this is a verbose gui update
-        
+
         Returns
         -------
         None
@@ -1086,7 +1081,7 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         4 value tuple
@@ -1133,7 +1128,7 @@ class Risk(object):
                              "Australia":2, "Asia":7, "S_America":2}
 
         return (board, continents, card_faces, continent_rewards)
-    
+
     @staticmethod
     def id_names():
         """
@@ -1144,7 +1139,7 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         2 value tuple
@@ -1192,7 +1187,7 @@ class Risk(object):
         -------------------
         players : integer
             The number of players in the game
-        
+
         Returns
         -------
         integer
@@ -1202,7 +1197,7 @@ class Risk(object):
         return {2:40, 3:35, 4:30, 5:25, 6:20}[players]
 
     @staticmethod
-    def gen_init_state(board_size = 42):
+    def gen_init_state(board_size=42):
         """
         Generate the pregame state of the environment
 
@@ -1212,7 +1207,7 @@ class Risk(object):
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         3 value tuple
@@ -1222,7 +1217,7 @@ class Risk(object):
 
         """
         territory = np.array([-1, 0])
-        territories = np.array([territory for x in range(board_size)])
+        territories = np.array([territory]*board_size)
         cards = np.repeat(6, 44)
         return (territories, cards, 0)
-    
+

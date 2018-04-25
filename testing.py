@@ -5,7 +5,7 @@ import sys
 import random
 import os
 import pygame
-from rlrisk.agents.position_minigame_agent import StartLearningAgent
+from position_minigame_agent import StartLearningAgent
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

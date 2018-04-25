@@ -38,7 +38,7 @@ class BaseAgent(object):
         setup_values : 7 value tuple
             int : The symbol in the game state representing this agent
                 ie 0 means this agent is player 1 for the particular game
-                
+
             generator : The sequence from which rewards for card set trade ins
                 are pulled
 
@@ -52,7 +52,7 @@ class BaseAgent(object):
                 as values
 
             dictionary : Maps continents to the defined troop rewards per continent
-            
+
         Returns
         -------
         None
@@ -125,7 +125,7 @@ class BaseAgent(object):
             A list of all valid moves for a given player, for a given action,
             for a given state. Most of the time it is a list of territory IDs,
             but could well be tuples (attack from, attack to), or booleans.
-            
+
         Returns
         -------
         ? : One of the elements inside the options parameter

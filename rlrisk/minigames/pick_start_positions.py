@@ -1,3 +1,8 @@
+"""
+Minigame for replaying the first part of the game Risk
+over and over again, when players choose their initial territories
+"""
+
 import time
 from rlrisk.environment import Risk
 from rlrisk.agents import BaseAgent

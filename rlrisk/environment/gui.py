@@ -3,8 +3,8 @@ This module holds the class for which the gui for the game is made
 it can be used by setting the GUI flag when creating a Risk object
 '''
 
-import pygame
 import os
+import pygame
 
 class GUI(object):
     '''
@@ -50,7 +50,7 @@ class GUI(object):
         Parameters
         -------------------
         None
-            
+
         Returns
         -------
         None
@@ -78,7 +78,7 @@ class GUI(object):
             (2, 42) Numpy Array representing each territory owner and troop count
             (44,)   Numpy Array representing status of each card
             integer representing the number of card set trade-ins so far
-            
+
         Returns
         -------
         None
@@ -127,7 +127,7 @@ class GUI(object):
         Parameters
         -------------------
         None
-            
+
         Returns
         -------
         None
@@ -145,7 +145,7 @@ class GUI(object):
         Parameters
         -------------------
         None
-            
+
         Returns
         -------
         Dictionary
@@ -182,7 +182,7 @@ class GUI(object):
         Parameters
         -------------------
         None
-            
+
         Returns
         -------
         Dictionary
@@ -217,7 +217,7 @@ class GUI(object):
             (2, 42) Numpy Array representing each territory owner and troop count
             (44,)   Numpy Array representing status of each card
             integer representing the number of card set trade-ins so far
-            
+
         Returns
         -------
         Dictionary
@@ -250,7 +250,7 @@ class GUI(object):
             (2, 42) Numpy Array representing each territory owner and troop count
             (44,)   Numpy Array representing status of each card
             integer representing the number of card set trade-ins so far
-            
+
         Returns
         -------
         None
@@ -273,12 +273,11 @@ class GUI(object):
 
         label = self.font.render("Trade ins: " + str(trade_ins), 1, self.colors['black'])
         self.screen.blit(label, (orig_x, ypos - 30))
-        
-        for i, p in enumerate(players):
+
+        for i, player in enumerate(players):
             xpos = orig_x + 30 * i
             #color all the circles their respective colors
-            pygame.draw.circle(self.screen, self.colors[self.p2c[p]],
+            pygame.draw.circle(self.screen, self.colors[self.p2c[player]],
                                (xpos, ypos), 14, 0)
-            label = self.font.render(str(players_cards[p]), 1, self.colors['black'])
+            label = self.font.render(str(players_cards[player]), 1, self.colors['black'])
             self.screen.blit(label, (xpos - 12, ypos - 6))
-

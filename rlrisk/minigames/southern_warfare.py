@@ -1,6 +1,12 @@
+"""
+Minigame for playing with the full Risk mechanics
+but on a smaller scale. The environment is restricted
+to play on only the S. American and African continent
+"""
+
+import time
 from rlrisk.environment import Risk
 from rlrisk.minigames import SWGUI
-import time
 
 class SouthernWarfare(Risk):
     """A minigame that is the full Risk game just for S. America and Africa"""
@@ -9,7 +15,7 @@ class SouthernWarfare(Risk):
         """Constructor for SouthernWarfare that restricts the environment"""
 
         self.sleep_val = kwargs.pop('sleep_val', 0.5)
-        
+
         super(SouthernWarfare, self).__init__(*args, **kwargs)
 
         if self.has_gui:
@@ -61,6 +67,6 @@ class SouthernWarfare(Risk):
 
     def gui_update(self, verbose=False):
         super(SouthernWarfare, self).gui_update(verbose)
-        
+
         if self.has_gui and self.verbose_gui:
             time.sleep(self.sleep_val)

@@ -11,7 +11,7 @@ class Human(BaseAgent):
 
     def __init__(self):
         """Adds a dictionary to use for prompting user by action code"""
-        
+
         super(Human, self).__init__()
         self.acodes = {0:'Place 1 Troop during Recruitment\nOptions are territory IDs',
                        1:'Choose an attack to perform (From, To)\nFalse is for no attack',
@@ -28,7 +28,7 @@ class Human(BaseAgent):
 
     def take_action(self, state, action_code, options):
         """Enumerates options to user and validates input to choose an option"""
-        
+
         print(self.acodes[action_code])
         for index, option in enumerate(options):
             print(index, 'is for option', option)

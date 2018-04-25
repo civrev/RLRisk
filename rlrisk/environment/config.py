@@ -29,51 +29,48 @@ def get_turn_order(players, order_setting="c"):
     '''
     p_list = list(range(players))
     op_list = list(p_list)
-        
+
     order = []
 
-    #the GUI will handle setting selections
-    #without console input
-    if len(order_setting) == 0:
-        order_setting = input("Clockwise, highest roll, or input order? c/r/i ")
-        
     if order_setting.lower() == "c":
-            
+
         first = random.choice(p_list)
-        order = [player if player<=players - 1 else p_list[player-players] for player in range(first, players + first)]
-            
+        order = [player if player <= players - 1 else p_list[player-players]
+                 for player in range(first, players + first)]
+
     elif order_setting.lower() == "r":
 
         for player in range(players):
             chosen = random.choice(p_list)
             p_list.remove(chosen)
             order.append(chosen)
-            
+
     else:
-        
-        order = [int(x) - 1 for x in input("Enter the order by space seperated intergers example: \"1 2 3\" ").split()]
+        prompt = "Enter the order by space seperated intergers example: \"1 2 3\" "
+        order = [int(x) - 1 for x in input(prompt).split()]
 
 
-    if not sum([True for p in order if p in op_list]) == players:
+    if sum([True for p in order if p in op_list]) != players:
         raise ValueError("Error generating player order " + str(order) +
-            " did not match any order of " + str(list(range(players))))
-        
+                         " did not match any order of " +
+                         str(list(range(players))))
+
     return order
 
 def standard_trade_gen():
     """Generator for standard ruleset trade in rewards"""
-    for x in  [4,6,8,10,15]:
-        yield x
+    for num in  [4, 6, 8, 10, 15]:
+        yield num
     num = 15
     while True:
-        num+=5
+        num += 5
         yield num
 
 def by_one_gen():
     """Generator for trade in rewards starting at 3 and increasing by 1"""
     num = 2
     while True:
-        num+=1
+        num += 1
         yield num
 
 def get_trade_vals(setting="s"):
@@ -100,5 +97,5 @@ def get_trade_vals(setting="s"):
         values = standard_trade_gen()
     elif setting == "1":
         values = by_one_gen()
-        
+
     return values
