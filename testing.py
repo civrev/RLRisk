@@ -103,7 +103,7 @@ def nn_demo():
     ui = int(input("How many games? "))
     f_list = []
     for x in range(ui):
-        if x % 500 == 0:
+        if x % 10 == 0:
             gui = True
             print(x,'F Mean:',sum(f_list[-5:])/5)
             nnp.epsilon = 0
@@ -111,7 +111,7 @@ def nn_demo():
             gui = False
             nnp.epsilon = 0.05
         nnp.v_flag=gui
-        env = SPMinigame(players, has_gui=gui, sleep_val=0.2)
+        env = SPMinigame(nnp, has_gui=gui, sleep_val=0.2)
         env.play()
         f_list.append(nnp.prev_reward)
         nnp.update()

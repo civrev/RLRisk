@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 from rlrisk.agents import BaseAgent
 
 from keras.layers import Dense
+from keras.optimizers import SGD
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping
@@ -16,7 +17,7 @@ import random
 
 class StartLearningAgent(BaseAgent):
 
-    def __init__(self, nodes=100, learning_rate=1, v_flag=True, epsilon=0.1):
+    def __init__(self, nodes=144, learning_rate=1, v_flag=True, epsilon=0.1):
         super(StartLearningAgent, self).__init__()
 
         #Size of state array, for input layer of NN
@@ -62,6 +63,8 @@ class StartLearningAgent(BaseAgent):
             #if it chose an invalid option, train it until it learns
             #the rules
             while max_action not in options:
+
+                print("Had to correct",self.correct_count,"\n",actions)
 
                 #handles the training
                 self.correct(state, options)
@@ -119,11 +122,10 @@ class StartLearningAgent(BaseAgent):
         '''
 
         model = Sequential()
-        model.add(Dense(int(self.nodes*1), activation='sigmoid', input_shape=(self.input,)))
-        model.add(Dense(int(self.nodes*0.8), activation='sigmoid'))
-        model.add(Dense(int(self.nodes*0.7), activation='sigmoid'))
+        model.add(Dense(self.nodes, activation='relu', input_shape=(self.input,)))
+        model.add(Dense(int(self.nodes*0.5), activation='sigmoid'))
         model.add(Dense(self.output, activation='sigmoid'))
-        model.compile(optimizer='adam', loss='mean_absolute_percentage_error', metrics=['accuracy'])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
         return model
 
