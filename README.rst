@@ -20,6 +20,7 @@ User installation
 The easiest way to install this package is through PyPi
 
 ::
+
     pip install rlrisk
 
 Otherwise you can manually install this package by cloning
