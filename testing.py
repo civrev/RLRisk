@@ -1,18 +1,17 @@
-#risk.py
+#testing.py
 #Christian Watts
 
-import sys
-import random
-import os
-import pygame
 from position_minigame_agent import StartLearningAgent
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import keras
 from rlrisk.environment import *
 from rlrisk.agents import *
 from rlrisk.minigames import *
+
+#unsual import order for copy-paste of plot results
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def plot_results(results, players, trade_gen, roll=20, lw=2):
     '''
@@ -66,7 +65,7 @@ def full_demo():
     env = Risk(players, has_gui=True)
     results = env.play()
     trade_gen = env.gen_backup
-    plot_results(results, env.players, trade_gen, 5)
+    plot_results(results, env.players, env.gen_backup, 5)
 
 def start_mg():
     players = [AggressiveAgent() for x in range(6)]
